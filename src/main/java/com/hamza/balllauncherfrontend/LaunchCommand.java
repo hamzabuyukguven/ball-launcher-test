@@ -2,12 +2,11 @@ package com.hamza.balllauncherfrontend;
 
 public class LaunchCommand {
 
-    private String action;      // "FIRE", "STOW", "EMERGENCY_STOP", "SET_POSITION"
+    private String action;      
     private double targetX;
     private double targetY;
 
     public LaunchCommand() {
-        // Jackson için boş constructor
     }
 
     public LaunchCommand(String action, double targetX, double targetY) {
