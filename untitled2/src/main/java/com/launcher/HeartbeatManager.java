@@ -1,5 +1,6 @@
 package com.launcher;
 
+import com.launcher.kafka.model.SystemStatus;
 import com.launcher.tcp.TCPLauncher;
 import com.launcher.kafka.SystemStatusPublisher;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,10 @@ public class HeartbeatManager implements Runnable{
             boolean isTcpAlive = tcpLauncher.isActive();
 
             logger.info("TCP Server Status: " + (isTcpAlive ? "ACTIVE" : "INACTIVE"));
-            statusPublisher.evaluateAndPublish(isTcpAlive, true, true); //Daha sonra düzenlenecek geçici olarak true atadık.
+            SystemStatusPublisher statusPublisher = new SystemStatusPublisher(); //Daha sonra düzenlenecek geçici olarak true atadık.
+            SystemStatus status = new SystemStatus(isTcpAlive, isTcpAlive ? "ACTIVE" : "INACTIVE", 0.0, 0.0, System.currentTimeMillis());
 
+            statusPublisher.publishStatus(status);
         }
 
         public void start() {
