@@ -13,7 +13,7 @@ import java.util.Properties;
 public class CommandProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandProducer.class);
-    private static final String CMD_TOPIC = "cmd";
+    private static final String CMD_TOPIC = "launcher.system.command";
 
     private final KafkaProducer<String, String> producer;
     private final ObjectMapper objectMapper = new ObjectMapper();
