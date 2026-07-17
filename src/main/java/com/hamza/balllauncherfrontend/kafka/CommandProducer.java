@@ -1,4 +1,4 @@
-package kafka;
+package com.hamza.ballauncherfrontend.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.KafkaProducer;
