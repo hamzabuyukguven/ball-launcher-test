@@ -2,7 +2,7 @@ package com.hamza.balllauncherfrontend.kafka;
 
 public class LaunchCommand {
 
-    private String action;      
+    private String action;
     private double targetX;
     private double targetY;
 
