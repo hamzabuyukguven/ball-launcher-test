@@ -9,7 +9,6 @@ public class SystemStatus {
     private long timeStamp;
 
     public SystemStatus() {
-        // Jackson için boş constructor
     }
 
     public boolean isConnected() {
