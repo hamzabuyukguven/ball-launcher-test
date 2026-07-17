@@ -1,4 +1,4 @@
-package com.hamza.balllauncherfrontend;
+package com.hamza.balllauncherfrontend.kafka;
 
 public class LaunchCommand {
 
