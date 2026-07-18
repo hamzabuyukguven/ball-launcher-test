@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.10">
+  <world name="heybeliada_ship_test_world">
+    <plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench">
+      <verbose>true</verbose>
+    </plugin>
+    <physics name="physics" type="dart">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics" />
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands" />
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster" />
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 80 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
+      <direction>-0.5 0.2 -1</direction>
+    </light>
+    <model name="ground">
+      <static>true</static>
+      <link name="ground_link">
+        <collision name="ground_collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>250 250</size>
+            </plane>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+    <include>
+      <uri>model://heybeliada_ship</uri>
+      <pose>0 0 3.92 0 0 0</pose>
+    </include>
+    <model name="visual_ocean">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="ocean_link">
+        <visual name="ocean_visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>2000 2000</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.01 0.12 0.20 1</ambient>
+            <diffuse>0.01 0.30 0.46 1</diffuse>
+            <specular>0.30 0.50 0.60 1</specular>
+            <pbr>
+              <metal>
+                <roughness>0.18</roughness>
+                <metalness>0.0</metalness>
+              </metal>
+            </pbr>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

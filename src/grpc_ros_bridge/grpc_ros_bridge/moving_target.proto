@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package launcher_command;
+
+service LauncherCommandService {
+  rpc SendCommand (LauncherCommandRequest) returns (LauncherCommandReply);
+}
+
+message LauncherCommandRequest {
+  double x = 1;
+  double y = 2;
+  double left_motor_rpm = 3;
+  double right_motor_rpm = 4;
+}
+
+message LauncherCommandReply {
+  bool accepted = 1;
+  string message = 2;
+}

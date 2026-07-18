@@ -1,0 +1,36 @@
+# ROS 2 / colcon derleme çıktıları
+build/
+install/
+log/
+
+# Python geçici dosyaları
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Editör dosyaları
+.vscode/
+.idea/
+*.swp
+*~
+
+# Eski yedek klasör ve dosyaları
+**/backup_*/
+*backup_*
+*.backup_*
+*.before_*
+*.bak
+*.bak_*
+*.orig
+
+# Arşiv ve snapshot dosyaları
+*.tar
+*.tar.gz
+*.zip
+heybeliada_proje_snapshot.txt
+
+# İşletim sistemi dosyaları
+.DS_Store
+Thumbs.db

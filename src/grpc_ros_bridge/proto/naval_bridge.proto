@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package naval_bridge;
+
+option java_multiple_files = true;
+option java_package = "com.heybeliada.grpc";
+option java_outer_classname = "NavalBridgeProto";
+
+service NavalBridgeService {
+  rpc SendGunRateCommand(
+    GunRateCommandRequest
+  ) returns (
+    CommandReply
+  );
+
+  rpc SendTargetInfo(
+    TargetInfoRequest
+  ) returns (
+    CommandReply
+  );
+
+  rpc StreamSimulationPackets(
+    SubscribeRequest
+  ) returns (
+    stream SimulationPacket
+  );
+}
+
+message SubscribeRequest {
+  string client_id = 1;
+}
+
+message GunRateCommandRequest {
+  uint64 sequence = 1;
+
+  double pan_rate_rad_s = 2;
+  double tilt_rate_rad_s = 3;
+
+  bool control_enabled = 4;
+  bool fire = 5;
+
+  int64 timestamp_ms = 6;
+}
+
+message TargetInfoRequest {
+  uint64 sequence = 1;
+
+  string target_id = 2;
+
+  double position_x_m = 3;
+  double position_y_m = 4;
+
+  bool has_position_z = 5;
+  double position_z_m = 6;
+
+  float confidence = 7;
+  bool valid = 8;
+
+  int64 timestamp_ms = 9;
+}
+
+message GunInfo {
+  uint64 sequence = 1;
+
+  string gun_id = 2;
+
+  double pan_angle_rad = 3;
+  double tilt_angle_rad = 4;
+
+  double pan_rate_rad_s = 5;
+  double tilt_rate_rad_s = 6;
+
+  double commanded_pan_rate_rad_s = 7;
+  double commanded_tilt_rate_rad_s = 8;
+
+  bool control_enabled = 9;
+  bool ready_to_fire = 10;
+  bool firing = 11;
+
+  bool fault = 12;
+  string fault_text = 13;
+
+  int64 timestamp_ms = 14;
+}
+
+message PlatformInfo {
+  uint64 sequence = 1;
+
+  string platform_id = 2;
+
+  double position_x_m = 3;
+  double position_y_m = 4;
+  double position_z_m = 5;
+
+  double velocity_x_mps = 6;
+  double velocity_y_mps = 7;
+  double velocity_z_mps = 8;
+
+  double yaw_rad = 9;
+  double yaw_rate_rad_s = 10;
+
+  bool simulation_ready = 11;
+  string mode = 12;
+
+  int64 timestamp_ms = 13;
+}
+
+message Heartbeat {
+  uint64 sequence = 1;
+
+  string component = 2;
+
+  bool healthy = 3;
+  string state = 4;
+
+  double uptime_sec = 5;
+  int64 timestamp_ms = 6;
+}
+
+message SimulationPacket {
+  oneof payload {
+    GunInfo gun_info = 1;
+    PlatformInfo platform_info = 2;
+    Heartbeat heartbeat = 3;
+  }
+}
+
+message CommandReply {
+  bool accepted = 1;
+  string message = 2;
+  uint64 sequence = 3;
+}

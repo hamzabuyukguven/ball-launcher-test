@@ -1,0 +1,218 @@
+<?xml version="1.0" ?>
+
+<sdf version="1.9">
+  <model name="pan_tilt">
+
+    <!-- Model zeminde sabit dursun. -->
+    <static>false</static>
+
+    <!-- Alt sabit gövde -->
+    <link name="base_link">
+      <pose>0 0 0.15 0 0 0</pose>
+
+      <inertial>
+        <mass>5.0</mass>
+        <inertia>
+          <ixx>0.10</ixx>
+          <iyy>0.10</iyy>
+          <izz>0.10</izz>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="base_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.25</radius>
+            <length>0.30</length>
+          </cylinder>
+        </geometry>
+
+        <material>
+          <ambient>0.15 0.15 0.15 1</ambient>
+          <diffuse>0.20 0.20 0.20 1</diffuse>
+        </material>
+      </visual>
+
+      <collision name="base_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.25</radius>
+            <length>0.30</length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Yatay dönen bölüm -->
+    <link name="pan_link">
+      <pose>0 0 0.40 0 0 0</pose>
+
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.02</ixx>
+          <iyy>0.02</iyy>
+          <izz>0.02</izz>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="pan_visual">
+        <geometry>
+          <box>
+            <size>0.40 0.25 0.20</size>
+          </box>
+        </geometry>
+
+        <material>
+          <ambient>0.10 0.25 0.80 1</ambient>
+          <diffuse>0.10 0.25 0.80 1</diffuse>
+        </material>
+      </visual>
+
+      <collision name="pan_collision">
+        <geometry>
+          <box>
+            <size>0.40 0.25 0.20</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Dikey hareket eden namlu / lazer gövdesi -->
+    <link name="tilt_link">
+      <pose>0.40 0 0.50 0 0 0</pose>
+
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>0.01</ixx>
+          <iyy>0.01</iyy>
+          <izz>0.01</izz>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="tilt_visual">
+        <geometry>
+          <box>
+            <size>0.80 0.10 0.10</size>
+          </box>
+        </geometry>
+
+        <material>
+          <ambient>0.80 0.15 0.10 1</ambient>
+          <diffuse>0.80 0.15 0.10 1</diffuse>
+        </material>
+      </visual>
+
+      <collision name="tilt_collision">
+        <geometry>
+          <box>
+            <size>0.80 0.10 0.10</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Base'i dünyaya sabitle -->
+    <joint name="base_fixed_joint" type="fixed">
+      <parent>world</parent>
+      <child>base_link</child>
+    </joint>
+
+    <!-- Yatay eksen: Z ekseni etrafında dönme -->
+    <joint name="pan_joint" type="revolute">
+      <pose relative_to="base_link">0 0 0.25 0 0 0</pose>
+
+      <parent>base_link</parent>
+      <child>pan_link</child>
+
+      <axis>
+        <xyz>0 0 1</xyz>
+
+        <limit>
+          <lower>-1.5708</lower>
+          <upper>1.5708</upper>
+          <effort>50</effort>
+          <velocity>2</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.1</friction>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- Dikey eksen: Y ekseni etrafında dönme -->
+    <joint name="tilt_joint" type="revolute">
+      <pose relative_to="pan_link">0.20 0 0.10 0 0 0</pose>
+
+      <parent>pan_link</parent>
+      <child>tilt_link</child>
+
+      <axis>
+        <xyz>0 1 0</xyz>
+
+        <limit>
+          <lower>-0.7854</lower>
+          <upper>0.7854</upper>
+          <effort>30</effort>
+          <velocity>2</velocity>
+        </limit>
+
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.1</friction>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- Pan eklemi konum kontrolcüsü -->
+    <plugin
+      filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+
+      <joint_name>pan_joint</joint_name>
+      <topic>/pan_cmd</topic>
+
+      <p_gain>10.0</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>1.0</d_gain>
+
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+
+      <cmd_max>50.0</cmd_max>
+      <cmd_min>-50.0</cmd_min>
+    </plugin>
+
+    <!-- Tilt eklemi konum kontrolcüsü -->
+    <plugin
+      filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+
+      <joint_name>tilt_joint</joint_name>
+      <topic>/tilt_cmd</topic>
+
+      <p_gain>10.0</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>1.0</d_gain>
+
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+
+      <cmd_max>30.0</cmd_max>
+      <cmd_min>-30.0</cmd_min>
+    </plugin>
+
+  </model>
+</sdf>

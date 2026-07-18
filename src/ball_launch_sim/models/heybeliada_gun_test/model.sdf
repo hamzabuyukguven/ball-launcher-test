@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="heybeliada_gun_test">
+    <static>false</static>
+    <self_collide>false</self_collide>
+
+    <!-- Sabit test platformu -->
+    <link name="base_link">
+      <inertial>
+        <mass>500</mass>
+        <inertia>
+          <ixx>500</ixx><iyy>500</iyy><izz>500</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="base_collision">
+        <pose>0 0 -0.15 0 0 0</pose>
+        <geometry><box><size>5 5 0.3</size></box></geometry>
+      </collision>
+      <visual name="base_visual">
+        <pose>0 0 -0.15 0 0 0</pose>
+        <geometry><box><size>5 5 0.3</size></box></geometry>
+        <material>
+          <ambient>0.12 0.12 0.12 1</ambient>
+          <diffuse>0.18 0.18 0.18 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="base_fixed_joint" type="fixed">
+      <parent>world</parent>
+      <child>base_link</child>
+    </joint>
+
+    <!-- Z ekseni etrafında sağ-sol dönen dış kaporta -->
+    <link name="pan_link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 1.2 0 0 0</pose>
+        <mass>80</mass>
+        <inertia>
+          <ixx>90</ixx><iyy>90</iyy><izz>120</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="pan_visual">
+        <geometry>
+          <mesh><uri>model://heybeliada_gun_test/meshes/turret_pan.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.55 0.58 1</ambient>
+          <diffuse>0.72 0.72 0.75 1</diffuse>
+        </material>
+      </visual>
+      <collision name="pan_collision">
+        <pose>0 0 1.25 0 0 0</pose>
+        <geometry><cylinder><radius>1.75</radius><length>2.5</length></cylinder></geometry>
+      </collision>
+    </link>
+
+    <joint name="pan_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>pan_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.617994</lower>
+          <upper>2.617994</upper>
+          <effort>100000</effort>
+          <velocity>0.8</velocity>
+        </limit>
+        <dynamics><damping>15</damping><friction>2</friction></dynamics>
+      </axis>
+    </joint>
+
+    <!-- CAD içindeki gerçek yatay dönme merkezi: pan merkezine göre x=0.113315 m, z=1.351354 m -->
+    <link name="tilt_link">
+      <pose>0.113315 0 1.351354 0 0 0</pose>
+      <inertial>
+        <pose>1.5 0 0 0 0 0</pose>
+        <mass>35</mass>
+        <inertia>
+          <ixx>30</ixx><iyy>100</iyy><izz>100</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="tilt_visual">
+        <geometry>
+          <mesh><uri>model://heybeliada_gun_test/meshes/gun_tilt.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.28 0.28 0.30 1</ambient>
+          <diffuse>0.42 0.42 0.45 1</diffuse>
+        </material>
+      </visual>
+      <collision name="tilt_collision">
+        <pose>2.2 0 0 0 0 0</pose>
+        <geometry><box><size>5.2 1.4 1.5</size></box></geometry>
+      </collision>
+
+      <!-- Daha sonra ball_spawner için referans alacağımız görünmez namlu çıkış çerçevesi -->
+      <visual name="muzzle_marker">
+        <pose>5.35 0 0 0 0 0</pose>
+        <geometry><sphere><radius>0.08</radius></sphere></geometry>
+        <material>
+          <ambient>1 0.1 0.1 1</ambient>
+          <diffuse>1 0.1 0.1 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="tilt_joint" type="revolute">
+      <parent>pan_link</parent>
+      <child>tilt_link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-0.0872665</lower>
+          <upper>1.2217305</upper>
+          <effort>100000</effort>
+          <velocity>0.6</velocity>
+        </limit>
+        <dynamics><damping>10</damping><friction>1</friction></dynamics>
+      </axis>
+    </joint>
+
+    <!-- Uyumluluk testi için PID yerine kararlı hız tabanlı konum kontrolü -->
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>pan_joint</joint_name>
+      <topic>/heybeliada/pan_cmd</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <cmd_max>0.35</cmd_max>
+      <initial_position>0.0</initial_position>
+    </plugin>
+
+    
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>tilt_joint</joint_name>
+      <topic>/heybeliada/tilt_cmd</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <cmd_max>0.20</cmd_max>
+      <initial_position>0.0</initial_position>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher"/>
+  </model>
+</sdf>
