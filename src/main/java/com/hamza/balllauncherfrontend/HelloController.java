@@ -5,6 +5,8 @@ import com.hamza.balllauncherfrontend.kafka.LaunchCommand;
 import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,19 +14,28 @@ public class HelloController {
 
     private static final Logger logger = LoggerFactory.getLogger(HelloController.class);
 
+    @FXML
+    private TextField targetXField;
+
+    @FXML
+    private TextField targetYField;
+
+    @FXML
+    private Label statusLabel;
+
     private CommandProducer producer;
     private SystemStatusConsumer consumer;
 
     @FXML
     public void initialize() {
-        String kafkaBootstrapServers = "10.152.220.16:9092";
+        String kafkaBootstrapServers = "192.168.1.109:9092";
 
         producer = new CommandProducer(kafkaBootstrapServers);
         logger.info("Kafka producer is ready.");
 
-        consumer = new SystemStatusConsumer(kafkaBootstrapServers, "launcher-group", status -> {
-            logger.info("Status received -> Connected: {}, Availability: {}, PlatformAngle: {}, CannonAngle: {}",
-                    status.isConnected(), status.getAvailability(), status.getPlatformAngle(), status.getCannonAngle());
+        consumer = new SystemStatusConsumer(kafkaBootstrapServers, "frontend-group", status -> {
+            statusLabel.setText(String.format("Connected: %b | Availability: %s | Platform: %.1f | Cannon: %.1f",
+                status.isConnected(), status.getAvailability(), status.getPlatformAngle(), status.getCannonAngle()));
         });
 
         Thread consumerThread = new Thread(consumer);
@@ -32,15 +43,30 @@ public class HelloController {
         consumerThread.start();
     }
 
-    public void fire(double x, double y) {
-        LaunchCommand cmd = new LaunchCommand("FIRE", x, y);
-        producer.sendCommand(cmd);
-        logger.info("FIRE command sent for X:{} Y:{}", x, y);
+    @FXML
+    protected void onFireButtonClick() {
+        try {
+            double x = Double.parseDouble(targetXField.getText());
+            double y = Double.parseDouble(targetYField.getText());
+
+            producer.sendTelemetry(x, y);
+            producer.sendCommand(new LaunchCommand("FIRE"));
+
+            logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid X or Y value entered.");
+        }
     }
 
-    public void emergencyStop() {
-        LaunchCommand cmd = new LaunchCommand("EMERGENCY_STOP", 0.0, 0.0);
-        producer.sendCommand(cmd);
+    @FXML
+    protected void onStowButtonClick() {
+        producer.sendCommand(new LaunchCommand("STOW"));
+        logger.info("STOW command sent.");
+    }
+
+    @FXML
+    protected void onEmergencyStopButtonClick() {
+        producer.sendCommand(new LaunchCommand("EMERGENCY_STOP"));
         logger.warn("EMERGENCY STOP command sent!");
     }
 
@@ -48,10 +74,5 @@ public class HelloController {
         if (producer != null) producer.close();
         if (consumer != null) consumer.stop();
         logger.info("Kafka connections closed safely.");
-    }
-
-    @FXML
-    protected void onHelloButtonClick(){
-        logger.info("Hello button clicked(test button");
     }
 }
