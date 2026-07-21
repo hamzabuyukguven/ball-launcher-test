@@ -3,16 +3,12 @@ package com.hamza.balllauncherfrontend.kafka;
 public class LaunchCommand {
 
     private String action;
-    private double targetX;
-    private double targetY;
 
     public LaunchCommand() {
     }
 
-    public LaunchCommand(String action, double targetX, double targetY) {
+    public LaunchCommand(String action) {
         this.action = action;
-        this.targetX = targetX;
-        this.targetY = targetY;
     }
 
     public String getAction() {
@@ -21,21 +17,5 @@ public class LaunchCommand {
 
     public void setAction(String action) {
         this.action = action;
-    }
-
-    public double getTargetX() {
-        return targetX;
-    }
-
-    public void setTargetX(double targetX) {
-        this.targetX = targetX;
-    }
-
-    public double getTargetY() {
-        return targetY;
-    }
-
-    public void setTargetY(double targetY) {
-        this.targetY = targetY;
     }
 }
