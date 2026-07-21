@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package com.launcher.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.launcher.grpc";
+option java_outer_classname = "LauncherProto";
+
+// Fırlatıcı Komut Mesajı
+message LaunchCommandRequest {
+  string action = 1;      // örn: "LAUNCH", "AIM", "STOP"
+  double target_x = 2;    // Hedef X koordinatı
+  double target_y = 3;    // Hedef Y koordinatı
+}
+
+// Komut Yanıt Mesajı
+message LaunchCommandResponse {
+  bool success = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}
+
+// Sistem Durumu İstek Mesajı
+message StatusRequest {
+  string client_id = 1;
+}
+
+// Sistem Durum & Telemetri Yanıt Mesajı (Canlı yayın için)
+message SystemStatusResponse {
+  bool connected = 1;
+  string availability = 2;   // "ACTIVE", "INACTIVE"
+  double platform_angle = 3; // Platform açısı
+  double cannon_angle = 4;   // Top açısı
+  double filtered_x = 5;     // Kalman filtrelenmiş X
+  double filtered_y = 6;     // Kalman filtrelenmiş Y
+  int64 timestamp = 7;
+}
+
+// gRPC Servis Sözleşmesi
+service LauncherService {
+  // Tekil Komut Gönderimi (Unary RPC)
+  rpc SendCommand (LaunchCommandRequest) returns (LaunchCommandResponse);
+
+  // Gerçek Zamanlı Telemetri / Durum Akışı (Server Streaming RPC)
+  rpc StreamSystemStatus (StatusRequest) returns (stream SystemStatusResponse);
+}
