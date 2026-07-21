@@ -14,6 +14,7 @@ public class CommandProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandProducer.class);
     private static final String CMD_TOPIC = "launcher.system.command";
+    private static final String TELEMETRY_TOPIC = "launcher.system.telemetry";
 
     private final KafkaProducer<String, String> producer;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -29,18 +30,32 @@ public class CommandProducer {
 
     public void sendCommand(LaunchCommand command) {
         try {
-            String jsonCommand = objectMapper.writeValueAsString(command);
-            ProducerRecord<String, String> record = new ProducerRecord<>(CMD_TOPIC, jsonCommand);
-
-            producer.send(record, (metadata, exception) -> {
+            String json = objectMapper.writeValueAsString(command);
+            producer.send(new ProducerRecord<>(CMD_TOPIC, json), (metadata, exception) -> {
                 if (exception != null) {
-                    logger.error("ERROR: Failed to send command! ", exception);
+                    logger.error("Failed to send command", exception);
                 } else {
-                    logger.info("SUCCESS: Command sent -> {}", jsonCommand);
+                    logger.info("Command sent: {}", json);
                 }
             });
         } catch (Exception e) {
-            logger.error("Error serializing or sending command: ", e);
+            logger.error("Error serializing command", e);
+        }
+    }
+
+    public void sendTelemetry(double targetX, double targetY) {
+        try {
+            LauncherTelemetry data = new LauncherTelemetry(targetX, targetY);
+            String json = objectMapper.writeValueAsString(data);
+            producer.send(new ProducerRecord<>(TELEMETRY_TOPIC, json), (metadata, exception) -> {
+                if (exception != null) {
+                    logger.error("Failed to send telemetry", exception);
+                } else {
+                    logger.info("Telemetry sent: {}", json);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Error serializing telemetry", e);
         }
     }
 
@@ -51,3 +66,5 @@ public class CommandProducer {
         }
     }
 }
+
+ 
