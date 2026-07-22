@@ -1,33 +1,30 @@
 package com.launcher.kafka.model;
 
 public class LaunchCommand {
+
     private String action;
-    private double targetX;
-    private double targetY;
+    private LauncherTelemetry telemetry;
+    public LaunchCommand() {
+    }
 
-
-    public LaunchCommand(String action, double targetX, double targetY) {
+    public LaunchCommand(String action, LauncherTelemetry telemetry) {
         this.action = action;
-        this.targetX = targetX;
-        this.targetY = targetY;
+        this.telemetry = telemetry;
     }
 
     public String getAction() {
         return action;
     }
+
     public void setAction(String action) {
         this.action = action;
     }
-    public double getTargetX() {
-        return targetX;
+
+    public LauncherTelemetry getTelemetry() {
+        return telemetry;
     }
-    public void setTargetX(double targetX) {
-        this.targetX = targetX;
-    }
-    public double getTargetY() {
-        return targetY;
-    }
-    public void setTargetY(double targetY) {
-        this.targetY = targetY;
+
+    public void setTelemetry(LauncherTelemetry telemetry) {
+        this.telemetry = telemetry;
     }
 }
