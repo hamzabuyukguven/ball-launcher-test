@@ -6,7 +6,12 @@ public class SystemStatus {
     private String availability;
     private double platformAngle;
     private double cannonAngle;
-    private long timeStamp;
+    private long timestamp;
+    private double xCoordinate;
+    private double yCoordinate;
+    private int ammoCount;
+    private String ammoType;
+    private String reportMessage;
 
     public SystemStatus() {
     }
@@ -43,11 +48,51 @@ public class SystemStatus {
         this.cannonAngle = cannonAngle;
     }
 
-    public long getTimeStamp() {
-        return timeStamp;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public double getXCoordinate() {
+        return xCoordinate;
+    }
+
+    public void setXCoordinate(double xCoordinate) {
+        this.xCoordinate = xCoordinate;
+    }
+
+    public double getYCoordinate() {
+        return yCoordinate;
+    }
+
+    public void setYCoordinate(double yCoordinate) {
+        this.yCoordinate = yCoordinate;
+    }
+
+    public int getAmmoCount() {
+        return ammoCount;
+    }
+
+    public void setAmmoCount(int ammoCount) {
+        this.ammoCount = ammoCount;
+    }
+
+    public String getAmmoType() {
+        return ammoType;
+    }
+
+    public void setAmmoType(String ammoType) {
+        this.ammoType = ammoType;
+    }
+
+    public String getReportMessage() {
+        return reportMessage;
+    }
+
+    public void setReportMessage(String reportMessage) {
+        this.reportMessage = reportMessage;
     }
 }
