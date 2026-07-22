@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.canvas.Canvas?>
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.control.TextArea?>
+        <?import javafx.scene.control.TextField?>
+        <?import javafx.scene.layout.BorderPane?>
+        <?import javafx.scene.layout.HBox?>
+        <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hamza.balllauncherfrontend.HelloController"
-            prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #2b2b33;">
+            prefHeight="850.0" prefWidth="730.0" style="-fx-background-color: #2b2b33;">
 
     <top>
         <HBox alignment="CENTER" spacing="20.0">
-            <padding><Insets top="15" bottom="15"/></padding>
+            <padding>
+                <Insets top="15" bottom="15"/>
+            </padding>
             <Label fx:id="connectionLabel" text="DISCONNECTED"
                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
-            <Label fx:id="readyLabel" text="NOT READY"
-                   style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
-            <Button text="REPORTS" onAction="#onReportsButtonClick"
-                    style="-fx-background-color: #e07856; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            <VBox spacing="8.0" alignment="CENTER">
+                <Label fx:id="readyLabel" text="NOT READY"
+                       style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
+                <Button text="REPORTS" onAction="#onReportsButtonClick"
+                        style="-fx-background-color: #e07856; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </VBox>
         </HBox>
     </top>
 
@@ -49,12 +53,16 @@
 
     <bottom>
         <VBox spacing="10.0">
-            <padding><Insets top="10" bottom="20" left="20" right="20"/></padding>
+            <padding>
+                <Insets top="10" bottom="20" left="20" right="20"/>
+            </padding>
             <HBox spacing="20.0" alignment="CENTER_RIGHT">
-                <Button text="STOW" onAction="#onStowButtonClick"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 120;"/>
-                <Button text="FIRE" onAction="#onFireButtonClick"
-                        style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 120;"/>
+                <VBox spacing="10.0" alignment="CENTER_RIGHT">
+                    <Button text="STOW" onAction="#onStowButtonClick"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
+                    <Button text="FIRE" onAction="#onFireButtonClick"
+                            style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
+                </VBox>
             </HBox>
             <HBox spacing="20.0">
                 <Button text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick"
@@ -66,3 +74,10 @@
     </bottom>
 
 </BorderPane>
+
+
+
+
+
+
+
