@@ -89,14 +89,12 @@ private void drawCompass() {
 
     gc.clearRect(0, 0, w, h);
 
-    // Dış daire
     gc.setFill(Color.WHITESMOKE);
     gc.fillOval(cx - radius, cy - radius, radius * 2, radius * 2);
     gc.setStroke(Color.BLACK);
     gc.setLineWidth(1.5);
     gc.strokeOval(cx - radius, cy - radius, radius * 2, radius * 2);
 
-    // Derece etiketleri (0 üstte, 90 sağda, 180 altta, 270 solda)
     gc.setFill(Color.BLACK);
     gc.setFont(javafx.scene.text.Font.font(12));
     gc.fillText("0°", cx - 8, cy - radius - 8);
@@ -104,7 +102,6 @@ private void drawCompass() {
     gc.fillText("180°", cx - 14, cy + radius + 18);
     gc.fillText("270°", cx - radius - 32, cy + 5);
 
-    // İbreler
     drawNeedle(gc, cx, cy, radius, currentPlatformAngle, Color.web("#3d3d54"));
     drawNeedle(gc, cx, cy, radius, currentCannonAngle, Color.web("#e67e22"));
 }
@@ -118,7 +115,6 @@ private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius,
     gc.setLineWidth(3);
     gc.strokeLine(cx, cy, x, y);
 
-    // Ok ucu (arrowhead)
     double arrowLength = 12;
     double arrowAngle = Math.toRadians(25);
     double leftX = x - arrowLength * Math.cos(rad - arrowAngle);
