@@ -13,8 +13,8 @@ import java.util.Properties;
 public class CommandProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandProducer.class);
-    private static final String CMD_TOPIC = "launcher.system.command";
-    private static final String TELEMETRY_TOPIC = "launcher.system.telemetry";
+    private static final String CMD_TOPIC = "launcher.commands";
+    private static final String TELEMETRY_TOPIC = "launcher.telemetry";
 
     private final KafkaProducer<String, String> producer;
     private final ObjectMapper objectMapper = new ObjectMapper();
