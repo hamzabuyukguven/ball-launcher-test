@@ -79,32 +79,56 @@ public class HelloController {
         drawCompass();
     }
 
-    private void drawCompass() {
-        GraphicsContext gc = compassCanvas.getGraphicsContext2D();
-        double w = compassCanvas.getWidth();
-        double h = compassCanvas.getHeight();
-        double cx = w / 2;
-        double cy = h / 2;
-        double radius = Math.min(w, h) / 2 - 10;
+private void drawCompass() {
+    GraphicsContext gc = compassCanvas.getGraphicsContext2D();
+    double w = compassCanvas.getWidth();
+    double h = compassCanvas.getHeight();
+    double cx = w / 2;
+    double cy = h / 2;
+    double radius = Math.min(w, h) / 2 - 25;
 
-        gc.clearRect(0, 0, w, h);
-        gc.setFill(Color.WHITESMOKE);
-        gc.fillOval(cx - radius, cy - radius, radius * 2, radius * 2);
-        gc.setStroke(Color.BLACK);
-        gc.strokeOval(cx - radius, cy - radius, radius * 2, radius * 2);
+    gc.clearRect(0, 0, w, h);
 
-        drawNeedle(gc, cx, cy, radius, currentPlatformAngle, Color.BLUE);
-        drawNeedle(gc, cx, cy, radius, currentCannonAngle, Color.RED);
-    }
+    // Dış daire
+    gc.setFill(Color.WHITESMOKE);
+    gc.fillOval(cx - radius, cy - radius, radius * 2, radius * 2);
+    gc.setStroke(Color.BLACK);
+    gc.setLineWidth(1.5);
+    gc.strokeOval(cx - radius, cy - radius, radius * 2, radius * 2);
 
-    private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius, double angleDegrees, Color color) {
-        double rad = Math.toRadians(angleDegrees - 90);
-        double x = cx + radius * 0.8 * Math.cos(rad);
-        double y = cy + radius * 0.8 * Math.sin(rad);
-        gc.setStroke(color);
-        gc.setLineWidth(3);
-        gc.strokeLine(cx, cy, x, y);
-    }
+    // Derece etiketleri (0 üstte, 90 sağda, 180 altta, 270 solda)
+    gc.setFill(Color.BLACK);
+    gc.setFont(javafx.scene.text.Font.font(12));
+    gc.fillText("0°", cx - 8, cy - radius - 8);
+    gc.fillText("90°", cx + radius + 8, cy + 5);
+    gc.fillText("180°", cx - 14, cy + radius + 18);
+    gc.fillText("270°", cx - radius - 32, cy + 5);
+
+    // İbreler
+    drawNeedle(gc, cx, cy, radius, currentPlatformAngle, Color.web("#3d3d54"));
+    drawNeedle(gc, cx, cy, radius, currentCannonAngle, Color.web("#e67e22"));
+}
+
+private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius, double angleDegrees, Color color) {
+    double rad = Math.toRadians(angleDegrees - 90);
+    double x = cx + radius * 0.8 * Math.cos(rad);
+    double y = cy + radius * 0.8 * Math.sin(rad);
+
+    gc.setStroke(color);
+    gc.setLineWidth(3);
+    gc.strokeLine(cx, cy, x, y);
+
+    // Ok ucu (arrowhead)
+    double arrowLength = 12;
+    double arrowAngle = Math.toRadians(25);
+    double leftX = x - arrowLength * Math.cos(rad - arrowAngle);
+    double leftY = y - arrowLength * Math.sin(rad - arrowAngle);
+    double rightX = x - arrowLength * Math.cos(rad + arrowAngle);
+    double rightY = y - arrowLength * Math.sin(rad + arrowAngle);
+
+    gc.strokeLine(x, y, leftX, leftY);
+    gc.strokeLine(x, y, rightX, rightY);
+}
 
     @FXML
     protected void onFireButtonClick() {
