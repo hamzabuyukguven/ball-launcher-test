@@ -4,7 +4,6 @@ import com.launcher.kafka.model.SystemStatus;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,21 +11,22 @@ import java.util.Properties;
 
 public class SystemStatusPublisher {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(SystemStatusPublisher.class);
-    private static final String STATUS_TOPIC = "launcher.system.status";
-    private final KafkaProducer<String, String> producer;
-    private String topicName;
 
+    private static final String STATUS_TOPIC = "launcher.status";
+    private static final String TELEMETRY_TOPIC = "launcher.telemetry";
+    private static final String REPORTS_TOPIC = "launcher.reports";
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private final KafkaProducer<String, String> producer;
 
     public SystemStatusPublisher() {
-        this("192.168.1.109:9092");
+        this("localhost:9092");
     }
 
 
     public SystemStatusPublisher(String bootStrapServers) {
-        this.topicName = "launcher.system.status";
-
+        this.objectMapper = new ObjectMapper();
 
         Properties props = new Properties();
 
@@ -40,31 +40,26 @@ public class SystemStatusPublisher {
         logger.info("Kafka system status publisher successfully initialized.");
     }
 
-
-    private String serializeToJson(SystemStatus payload) {
-        return String.format(
-                "{\"connected\":%b,\"availability\":\"%s\",\"platformAngle\":%.2f,\"cannonAngle\":%.2f,\"timestamp\":%d}",
-                payload.isConnected(),
-                payload.getAvailability(),
-                payload.getPlatformAngle(),
-                payload.getCannonAngle(),
-                payload.getTimeStamp()
-        );
-
+    public void publishSystemStatus(SystemStatus systemStatus) {
+        sendToTopic(STATUS_TOPIC, systemStatus);
     }
 
-    public void close() {
-        if (producer != null) {
-            logger.info("Closing Kafka system status publisher.");
-            producer.close();
-
-        }
+    public void publishTelemetry(SystemStatus systemStatus) {
+        sendToTopic(TELEMETRY_TOPIC, systemStatus);
     }
 
-    public void publishStatus(SystemStatus status) {
+    public void publishReports(SystemStatus systemStatus) {
+        sendToTopic(REPORTS_TOPIC, systemStatus);
+    }
+
+
+    public void sendToTopic(String topicName, SystemStatus systemStatus) {
+
+        if(systemStatus == null) return;
+
         try{
-            String jsonStatus = objectMapper.writeValueAsString(status);
-            ProducerRecord<String, String> record = new ProducerRecord<>(STATUS_TOPIC, jsonStatus);
+            String jsonStatus = objectMapper.writeValueAsString(systemStatus);
+            ProducerRecord<String, String> record = new ProducerRecord<>(topicName, jsonStatus);
 
             producer.send(record,(metadata, exception) -> {
                 if (exception != null) {
@@ -79,6 +74,14 @@ public class SystemStatusPublisher {
             logger.error("ERROR: JSON serialization error.",  e);
         }
 
+    }
+
+    public void close() {
+        if (producer != null) {
+            logger.info("Closing Kafka system status publisher.");
+            producer.close();
+
+        }
     }
 }
 
