@@ -41,7 +41,7 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        String kafkaBootstrapServers = "192.168.1.109:9092"; // Backendci ile güncel adresi teyit et
+        String kafkaBootstrapServers = "192.168.1.109:9092"; 
 
         producer = new CommandProducer(kafkaBootstrapServers);
         logger.info("Kafka producer is ready.");
