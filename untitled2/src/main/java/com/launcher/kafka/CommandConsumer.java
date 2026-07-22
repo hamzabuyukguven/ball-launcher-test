@@ -3,6 +3,7 @@ package com.launcher.kafka;
 import java.lang.Runnable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.launcher.kafka.model.LaunchCommand;
+import com.launcher.kafka.model.LauncherTelemetry;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -42,7 +43,6 @@ public class CommandConsumer implements Runnable {
     }
 
     @Override
-
     public void run() {
         consumer.subscribe(Collections.singletonList(COMMAND_TOPIC));
         logger.info("Listening on Kafka topic [{}], Waiting for commands...", COMMAND_TOPIC);
@@ -78,16 +78,22 @@ public class CommandConsumer implements Runnable {
             logger.warn("Received null command or action.");
             return;
         }
+
         String action = command.getAction().toUpperCase();
-        logger.info("Received command >>> Action: {}, TargetX: {}, TargetY: {}", action, command.getTargetX(), command.getTargetY());
+
+        LauncherTelemetry telemetry = command.getTelemetry();
+        double targetX = (telemetry != null) ? telemetry.getTargetX() : 0.0;
+        double targetY = (telemetry != null) ? telemetry.getTargetY() : 0.0;
+
+        logger.info("Received command >>> Action: {}, TargetX: {}, TargetY: {}", action, targetX, targetY);
 
         switch (action) {
             case "SET_MANUAL_TARGET":
-                logger.info("Setting manual target coordinates: X = {}, Y = {}", command.getTargetX(), command.getTargetY());
+                logger.info("Setting manual target coordinates: X = {}, Y = {}", targetX, targetY);
                 break;
 
             case "FIRE":
-                logger.info("Firing at target : X = {}, Y = {}", command.getTargetX(), command.getTargetY());
+                logger.info("Firing at target : X = {}, Y = {}", targetX, targetY);
                 break;
 
             case "STOW":
@@ -95,7 +101,7 @@ public class CommandConsumer implements Runnable {
                 break;
 
             case "EMERGENCY_STOP":
-                logger.warn("!!! EMERGENCY STOP COMMAND RECIEVED !!!");
+                logger.warn("!!! EMERGENCY STOP COMMAND RECEIVED !!!");
                 break;
 
             default:
@@ -103,7 +109,6 @@ public class CommandConsumer implements Runnable {
                 break;
         }
     }
-
 
     public void stop() {
         logger.info("Stopping Kafka command consumer...");
