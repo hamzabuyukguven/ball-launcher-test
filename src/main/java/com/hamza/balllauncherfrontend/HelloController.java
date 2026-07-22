@@ -43,32 +43,34 @@ public class HelloController {
         consumerThread.start();
     }
 
-    @FXML
-    protected void onFireButtonClick() {
-        try {
-            double x = Double.parseDouble(targetXField.getText());
-            double y = Double.parseDouble(targetYField.getText());
+ @FXML
+protected void onFireButtonClick() {
+    try {
+        double x = Double.parseDouble(targetXField.getText());
+        double y = Double.parseDouble(targetYField.getText());
 
-            producer.sendTelemetry(x, y);
-            producer.sendCommand(new LaunchCommand("FIRE"));
+        LauncherTelemetry telemetry = new LauncherTelemetry(x, y);
+        
+        producer.sendTelemetry(x, y);
+        producer.sendCommand(new LaunchCommand("FIRE", telemetry));
 
-            logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
-        } catch (NumberFormatException e) {
-            logger.warn("Invalid X or Y value entered.");
-        }
+        logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
+    } catch (NumberFormatException e) {
+        logger.warn("Invalid X or Y value entered.");
     }
+}
 
-    @FXML
-    protected void onStowButtonClick() {
-        producer.sendCommand(new LaunchCommand("STOW"));
-        logger.info("STOW command sent.");
-    }
+@FXML
+protected void onStowButtonClick() {
+    producer.sendCommand(new LaunchCommand("STOW", null));
+    logger.info("STOW command sent.");
+}
 
-    @FXML
-    protected void onEmergencyStopButtonClick() {
-        producer.sendCommand(new LaunchCommand("EMERGENCY_STOP"));
-        logger.warn("EMERGENCY STOP command sent!");
-    }
+@FXML
+protected void onEmergencyStopButtonClick() {
+    producer.sendCommand(new LaunchCommand("EMERGENCY_STOP", null));
+    logger.warn("EMERGENCY STOP command sent!");
+}
 
     public void shutdown() {
         if (producer != null) producer.close();
