@@ -3,6 +3,7 @@ package com.hamza.balllauncherfrontend;
 import com.hamza.balllauncherfrontend.kafka.CommandProducer;
 import com.hamza.balllauncherfrontend.kafka.LaunchCommand;
 import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
+import com.hamza.balllauncherfrontend.kafka.LauncherTelemetry;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
