@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 public class SystemStatusConsumer implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(SystemStatusConsumer.class);
-    private static final String STATUS_TOPIC = "status";
+    private static final String STATUS_TOPIC = "launcher.status";
 
     private final KafkaConsumer<String, String> consumer;
     private final Consumer<SystemStatus> onStatusReceived;
