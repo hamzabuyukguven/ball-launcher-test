@@ -17,7 +17,7 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        Thread consumerThread = new Thread(new SystemStatusConsumer("172.20.10.3:9092", "launcher-group", message ->{
+        Thread consumerThread = new Thread(new SystemStatusConsumer("172.20.10.3:9092", "frontend-group", message ->{
             System.out.println("gelen mesaj:" +message);
         }));
         consumerThread.setDaemon(true);
