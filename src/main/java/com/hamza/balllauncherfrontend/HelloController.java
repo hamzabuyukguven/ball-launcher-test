@@ -71,8 +71,11 @@ public class HelloController {
         consumerThread.start();
 
         reportConsumer = new SystemReportConsumer(kafkaBootstrapServers, "frontend-report-group", report -> {
-            String line = String.format("[%s] %s", LocalTime.now().toString(), report.getReportMessage());
-            reportsArea.appendText(line + "\n");
+            String message =report.getReportMessage();
+            if (message != null && !message.isBlank()){
+                String line = String.format("[%s] %s", LocalTime.now().withNano(0), message);
+                reportsArea.appendText(line + System.lineSeparator());
+            }
         });
 
         Thread reportThread = new Thread(reportConsumer);
