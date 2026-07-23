@@ -42,7 +42,7 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        String kafkaBootstrapServers = "192.168.1.109:9092";
+        String kafkaBootstrapServers = "172.20.10.3:9092";
 
         producer = new CommandProducer(kafkaBootstrapServers);
         logger.info("Kafka producer is ready.");
