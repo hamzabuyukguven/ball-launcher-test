@@ -12,6 +12,7 @@ public class SystemStatus {
     private int ammoCount;
     private String ammoType;
     private String reportMessage;
+    private boolean readyToFire;
 
     public SystemStatus() {
     }
@@ -94,5 +95,13 @@ public class SystemStatus {
 
     public void setReportMessage(String reportMessage) {
         this.reportMessage = reportMessage;
+    }
+
+    public boolean isReadyToFire() {
+        return readyToFire;
+    }
+
+    public void setReadyToFire(boolean readyToFire) {
+        this.readyToFire = readyToFire;
     }
 }
