@@ -47,7 +47,7 @@
         <TextField fx:id="targetYField" alignment="CENTER" promptText="0.00" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
         <Label text="AMMUNITION" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <TextField fx:id="ammunitionField" alignment="CENTER" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+        <TextField fx:id="ammunitionField" alignment="CENTER" editable="false" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
         <Label text="BALL TYPE" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
         <TextField fx:id="ballTypeField" alignment="CENTER" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
