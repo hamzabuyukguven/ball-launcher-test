@@ -15,18 +15,15 @@
             prefHeight="850.0" prefWidth="800.0" 
             style="-fx-background-color: #434449;">
 
-    <!-- AÇIK GRİ ÜST BAR -->
     <AnchorPane prefHeight="130.0" style="-fx-background-color: #e5e5e5;" 
                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
 
-    <!-- HAZIR DURUMU (NOT READY) - Ekranın tam ortasına kilitli -->
     <HBox alignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="110.0">
         <Label fx:id="readyLabel" text="NOT READY" alignment="CENTER"
                prefWidth="160.0" prefHeight="40.0"
                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
     </HBox>
 
-    <!-- REPORTS VE DISCONNECTED (Simetrik üst paneller) -->
     <Button text="REPORTS" onAction="#onReportsButtonClick"
             prefWidth="160.0" prefHeight="40.0"
             AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="200.0"
@@ -37,7 +34,6 @@
            AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="200.0"
            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
 
-    <!-- HEDEFLEME PARAMETRELERİ (Sol Panel) -->
     <VBox spacing="10.0" prefWidth="240.0"
           AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="280.0"
           style="-fx-background-color: #636573; -fx-padding: 20; -fx-background-radius: 4;">
@@ -57,11 +53,9 @@
         <TextField fx:id="ballTypeField" alignment="CENTER" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
     </VBox>
 
-    <!-- KADRAN (Sağ Orta) -->
     <Canvas fx:id="compassCanvas" width="260.0" height="260.0" 
             AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="280.0"/>
 
-    <!-- AKSİYON BUTONLARI (STOW / FIRE) - Sağ Alt -->
     <VBox spacing="20.0" prefWidth="180.0"
           AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="600.0">
         <Button text="STOW" onAction="#onStowButtonClick"
@@ -73,7 +67,6 @@
                 style="-fx-background-color: #d96b38; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 4; -fx-alignment: center;"/>
     </VBox>
 
-    <!-- ACİL DURUM STOP BUTONU - Sol Alt (Alt alta iki satır) -->
     <Button text="EMERGENCY&#10;STOP" onAction="#onEmergencyStopButtonClick" textAlignment="CENTER"
             prefWidth="240.0" prefHeight="70.0"
             AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="600.0"
