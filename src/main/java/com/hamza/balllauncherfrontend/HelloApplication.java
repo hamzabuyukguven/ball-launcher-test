@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
+import com.hamza.balllauncherfrontend.HelloController;
 
 import java.io.IOException;
 
