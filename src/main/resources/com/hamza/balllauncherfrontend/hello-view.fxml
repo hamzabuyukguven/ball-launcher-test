@@ -1,77 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-        <?import javafx.geometry.Insets?>
-        <?import javafx.scene.canvas.Canvas?>
-        <?import javafx.scene.control.Button?>
-        <?import javafx.scene.control.Label?>
-        <?import javafx.scene.control.TextArea?>
-        <?import javafx.scene.control.TextField?>
-        <?import javafx.scene.layout.BorderPane?>
-        <?import javafx.scene.layout.HBox?>
-        <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hamza.balllauncherfrontend.HelloController"
-            prefHeight="850.0" prefWidth="730.0" style="-fx-background-color: #2b2b33;">
+<AnchorPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="com.hamza.balllauncherfrontend.HelloController"
+            prefHeight="850.0" prefWidth="900.0" 
+            style="-fx-background-color: #4b4d54;"> <!-- Figma'daki ana koyu gri zemin -->
 
-    <top>
-        <HBox alignment="CENTER" spacing="20.0">
-            <padding>
-                <Insets top="15" bottom="15"/>
-            </padding>
-            <Label fx:id="connectionLabel" text="DISCONNECTED"
-                   style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
-            <VBox spacing="8.0" alignment="CENTER">
-                <Label fx:id="readyLabel" text="NOT READY"
-                       style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
-                <Button text="REPORTS" onAction="#onReportsButtonClick"
-                        style="-fx-background-color: #ec221f; -fx-text-fill: white; -fx-font-weight: bold;"/>
-            </VBox>
-        </HBox>
-    </top>
+    <!-- AÇIK GRİ ÜST BAR (Tasarımın en üstündeki alan) -->
+    <Pane layoutX="0.0" layoutY="0.0" prefHeight="140.0" prefWidth="900.0" style="-fx-background-color: #e5e5e5;"/>
 
-    <left>
-        <VBox spacing="10.0" style="-fx-background-color: #4c4c62; -fx-padding: 20;">
-            <Label text="TARGETING PARAMETERS" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+    <!-- HAZIR DURUMU (NOT READY) - Üst orta, açık gri ve koyu gri sınırında -->
+    <Label fx:id="readyLabel" text="NOT READY" alignment="CENTER"
+           layoutX="360.0" layoutY="120.0" prefWidth="180.0" prefHeight="40.0"
+           style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
 
-            <Label text="Target X Coordinate" style="-fx-text-fill: white;"/>
-            <TextField fx:id="targetXField"/>
+    <!-- REPORTS BUTONU - Sol üst hiza -->
+    <Button text="REPORTS" onAction="#onReportsButtonClick"
+            layoutX="140.0" layoutY="220.0" prefWidth="180.0" prefHeight="40.0"
+            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
 
-            <Label text="Target Y Coordinate" style="-fx-text-fill: white;"/>
-            <TextField fx:id="targetYField"/>
+    <!-- BAĞLANTI DURUMU (DISCONNECTED) - Sağ üst hiza (Reports ile simetrik) -->
+    <Label fx:id="connectionLabel" text="DISCONNECTED" alignment="CENTER"
+           layoutX="580.0" layoutY="220.0" prefWidth="180.0" prefHeight="40.0"
+           style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
 
-            <Label text="AMMUNITION" style="-fx-text-fill: white;"/>
-            <TextField fx:id="ammunitionField"/>
+    <!-- HEDEFLEME PARAMETRELERİ (Sol Panel) -->
+    <VBox spacing="10.0" layoutX="120.0" layoutY="320.0" prefWidth="240.0"
+          style="-fx-background-color: #686a77; -fx-padding: 20; -fx-background-radius: 4;">
+        
+        <Label text="TARGETING PARAMETERS" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-font-size: 14px;"/>
 
-            <Label text="BALL TYPE" style="-fx-text-fill: white;"/>
-            <TextField fx:id="ballTypeField"/>
-        </VBox>
-    </left>
+        <Label text="Target X Coordinate" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
+        <TextField fx:id="targetXField" alignment="CENTER" promptText="0.00" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
-    <center>
-        <Canvas fx:id="compassCanvas" width="300" height="300"/>
-    </center>
+        <Label text="Target Y Coordinate" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
+        <TextField fx:id="targetYField" alignment="CENTER" promptText="0.00" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
-    <bottom>
-        <VBox spacing="10.0">
-            <padding>
-                <Insets top="10" bottom="20" left="20" right="20"/>
-            </padding>
-            <HBox spacing="20.0" alignment="CENTER_RIGHT">
-                <VBox spacing="10.0" alignment="CENTER_RIGHT">
-                    <Button text="STOW" onAction="#onStowButtonClick"
-                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
-                    <Button text="FIRE" onAction="#onFireButtonClick"
-                            style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
-                </VBox>
-            </HBox>
-            <HBox spacing="20.0">
-                <Button text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick"
-                        style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
-            </HBox>
-        </VBox>
-    </bottom>
+        <Label text="AMMUNITION" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
+        <TextField fx:id="ammunitionField" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
-</BorderPane>
+        <Label text="BALL TYPE" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
+        <TextField fx:id="ballTypeField" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+    </VBox>
+
+    <!-- KADRAN / AÇI GÖRSELLEŞTİRİCİ (Sağ Orta) -->
+    <Canvas fx:id="compassCanvas" width="260.0" height="260.0" layoutX="540.0" layoutY="320.0"/>
+
+    <!-- AKSİYON BUTONLARI (STOW / FIRE) - Sağ Alt -->
+    <VBox spacing="20.0" layoutX="580.0" layoutY="620.0" prefWidth="180.0">
+        <Button text="STOW" onAction="#onStowButtonClick"
+                style="-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 180; -fx-pref-height: 45; -fx-font-size: 16px; -fx-background-radius: 4;"/>
+        
+        <Button text="FIRE" onAction="#onFireButtonClick"
+                style="-fx-background-color: #d27038; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 180; -fx-pref-height: 45; -fx-font-size: 16px; -fx-background-radius: 4;"/>
+    </VBox>
+
+    <!-- ACİL DURUM STOP BUTONU - Sol Alt (Tasarımda daha geniş ve dikkat çekici) -->
+    <Button text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick" wrapText="true" textAlignment="CENTER"
+            layoutX="120.0" layoutY="640.0" prefWidth="240.0" prefHeight="70.0"
+            style="-fx-background-color: #d93838; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 4;"/>
+
+    <!-- GİZLİ RAPOR ALANI (Figma'da gizli kabul ediyoruz, arka planda kalır) -->
+    <TextArea fx:id="reportsArea" layoutX="120.0" layoutY="270.0" prefWidth="240.0" prefHeight="400.0"
+              visible="false" editable="false" wrapText="true"
+              style="-fx-control-inner-background: #111116; -fx-text-fill: #00ff00; -fx-font-family: 'Monospaced';"/>
+
+</AnchorPane>
 
 
 
