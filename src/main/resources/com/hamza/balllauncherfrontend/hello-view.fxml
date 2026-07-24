@@ -24,13 +24,13 @@
                 <Label fx:id="readyLabel" text="NOT READY"
                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"/>
                 <Button text="REPORTS" onAction="#onReportsButtonClick"
-                        style="-fx-background-color: #e07856; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        style="-fx-background-color: #ec221f; -fx-text-fill: white; -fx-font-weight: bold;"/>
             </VBox>
         </HBox>
     </top>
 
     <left>
-        <VBox spacing="10.0" style="-fx-background-color: #3d3d54; -fx-padding: 20;">
+        <VBox spacing="10.0" style="-fx-background-color: #4c4c62; -fx-padding: 20;">
             <Label text="TARGETING PARAMETERS" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
 
             <Label text="Target X Coordinate" style="-fx-text-fill: white;"/>
@@ -68,8 +68,6 @@
                 <Button text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick"
                         style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-min-width: 150;"/>
             </HBox>
-            <TextArea fx:id="reportsArea" prefHeight="100.0" editable="false"
-                      style="-fx-control-inner-background: #1e1e26; -fx-text-fill: white;"/>
         </VBox>
     </bottom>
 
