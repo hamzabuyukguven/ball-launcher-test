@@ -4,6 +4,7 @@ import java.lang.Runnable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.launcher.kafka.model.LaunchCommand;
 import com.launcher.kafka.model.LauncherTelemetry;
+import com.launcher.simulationtest.LauncherControlService;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -23,14 +24,16 @@ public class CommandConsumer implements Runnable {
     private static final String COMMAND_TOPIC = "launcher.commands";
     private final KafkaConsumer<String, String> consumer;
     private final ObjectMapper objectMapper;
+    private final LauncherControlService controlService;
     private volatile boolean running = true;
 
-    public CommandConsumer() {
-        this("localhost:9092");
+    public CommandConsumer(LauncherControlService controlService) {
+        this("172.20.10.3:9092", controlService);
     }
 
-    public CommandConsumer(String bootstrapServers) {
+    public CommandConsumer(String bootstrapServers, LauncherControlService controlService) {
         this.objectMapper = new ObjectMapper();
+        this.controlService = controlService;
 
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -90,18 +93,30 @@ public class CommandConsumer implements Runnable {
         switch (action) {
             case "SET_MANUAL_TARGET":
                 logger.info("Setting manual target coordinates: X = {}, Y = {}", targetX, targetY);
+                if (controlService != null) {
+                    controlService.updateTargetPosition(targetX, targetY);
+                }
                 break;
 
             case "FIRE":
                 logger.info("Firing at target : X = {}, Y = {}", targetX, targetY);
+                if (controlService != null) {
+                    controlService.fire();
+                }
                 break;
 
             case "STOW":
                 logger.info("Moving launcher to STOW Position...");
+                if (controlService != null) {
+                    controlService.moveToStowPosition();
+                }
                 break;
 
             case "EMERGENCY_STOP":
-                logger.warn("!!! EMERGENCY STOP COMMAND RECEIVED !!!");
+                logger.warn("!!! EMERGENCY STOP COMMAND RECIEVED !!!");
+                if (controlService != null) {
+                    controlService.emergencyStop();
+                }
                 break;
 
             default:

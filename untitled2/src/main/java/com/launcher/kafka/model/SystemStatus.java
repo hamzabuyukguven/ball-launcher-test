@@ -12,6 +12,8 @@ public class SystemStatus {
     private String ammoType;
     private String reportMessage;
 
+    private boolean readyToFire;
+
     public SystemStatus() {
     }
 
@@ -21,11 +23,10 @@ public class SystemStatus {
         this.platformAngle = platformAngle;
         this.cannonAngle = cannonAngle;
         this.timestamp = timestamp;
+        this.readyToFire = evaluateReadyToFire();
     }
 
-    public SystemStatus(boolean connected, String availability, double platformAngle, double cannonAngle,
-                        long timestamp, double xCoordinate, double yCoordinate, int ammoCount,
-                        String ammoType, String reportMessage) {
+    public SystemStatus(boolean connected, String availability, double platformAngle, double cannonAngle, long timestamp, double xCoordinate, double yCoordinate, int ammoCount, String ammoType, String reportMessage) {
         this.connected = connected;
         this.availability = availability;
         this.platformAngle = platformAngle;
@@ -36,6 +37,16 @@ public class SystemStatus {
         this.ammoCount = ammoCount;
         this.ammoType = ammoType;
         this.reportMessage = reportMessage;
+        this.readyToFire = evaluateReadyToFire();
+    }
+
+    public boolean evaluateReadyToFire() {
+        boolean hasConnection = this.connected;
+        boolean hasAmmo = this.ammoCount > 0;
+        boolean noFault = this.reportMessage == null || !this.reportMessage.toUpperCase().contains("FAULT");
+        boolean isServiceReady = "READY".equalsIgnoreCase(this.availability) || "IDLE".equalsIgnoreCase(this.availability);
+
+        return hasConnection && noFault && hasAmmo && isServiceReady;
     }
 
     public boolean isConnected() {
@@ -44,6 +55,7 @@ public class SystemStatus {
 
     public void setConnected(boolean connected) {
         this.connected = connected;
+        this.readyToFire = evaluateReadyToFire();
     }
 
     public String getAvailability() {
@@ -52,6 +64,7 @@ public class SystemStatus {
 
     public void setAvailability(String availability) {
         this.availability = availability;
+        this.readyToFire = evaluateReadyToFire();
     }
 
     public double getPlatformAngle() {
@@ -100,6 +113,7 @@ public class SystemStatus {
 
     public void setAmmoCount(int ammoCount) {
         this.ammoCount = ammoCount;
+        this.readyToFire = evaluateReadyToFire();
     }
 
     public String getAmmoType() {
@@ -116,5 +130,14 @@ public class SystemStatus {
 
     public void setReportMessage(String reportMessage) {
         this.reportMessage = reportMessage;
+        this.readyToFire = evaluateReadyToFire();
+    }
+
+    public boolean isReadyToFire() {
+        return readyToFire;
+    }
+
+    public void setReadyToFire(boolean readyToFire) {
+        this.readyToFire = readyToFire;
     }
 }

@@ -23,7 +23,7 @@ public class SystemStatusPublisher {
     private final KafkaProducer<String, String> producer;
 
     public SystemStatusPublisher() {
-        this("localhost:9092");
+        this("172.20.10.3:9092");
     }
 
     public SystemStatusPublisher(String bootStrapServers) {
