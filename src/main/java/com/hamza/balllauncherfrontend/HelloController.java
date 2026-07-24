@@ -7,6 +7,8 @@ import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
 import com.hamza.balllauncherfrontend.kafka.SystemReportConsumer;
 
 import javafx.application.Platform;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -48,33 +50,39 @@ public class HelloController {
         logger.info("Kafka producer is ready.");
 
         consumer = new SystemStatusConsumer(kafkaBootstrapServers, "frontend-group", status -> {
-            connectionLabel.setText(status.isConnected() ? "CONNECTED" : "DISCONNECTED");
-            connectionLabel.setStyle(status.isConnected()
-                    ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
-                    : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
+            // Arayüz güncellemeleri MUTLAKA Platform.runLater içinde olmalı
+            Platform.runLater(() -> {
+                connectionLabel.setText(status.isConnected() ? "CONNECTED" : "DISCONNECTED");
+                connectionLabel.setStyle(status.isConnected()
+                        ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
+                        : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
 
-            boolean ready = "READY".equalsIgnoreCase(status.getAvailability());
-            readyLabel.setText(ready ? "READY" : "NOT READY");
-            readyLabel.setStyle(ready
-                    ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
-                    : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
+                boolean ready = "READY".equalsIgnoreCase(status.getAvailability());
+                readyLabel.setText(ready ? "READY" : "NOT READY");
+                readyLabel.setStyle(ready
+                        ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
+                        : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
 
-            currentPlatformAngle = status.getPlatformAngle();
-            currentCannonAngle = status.getCannonAngle();
-            drawCompass();
-            compassCanvas.widthProperty().addListener((obs, oldVal, newVal) -> drawCompass());
-            compassCanvas.heightProperty().addListener((obs, oldVal, newVal) -> drawCompass());
+                currentPlatformAngle = status.getPlatformAngle();
+                currentCannonAngle = status.getCannonAngle();
+                drawCompass();
+            });
         });
+
+        // Compass boyut değişim dinleyicileri
+        compassCanvas.widthProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::drawCompass));
+        compassCanvas.heightProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::drawCompass));
 
         Thread consumerThread = new Thread(consumer);
         consumerThread.setDaemon(true);
         consumerThread.start();
 
         reportConsumer = new SystemReportConsumer(kafkaBootstrapServers, "frontend-report-group", report -> {
-            String message =report.getReportMessage();
-            if (message != null && !message.isBlank()){
+            String message = report.getReportMessage();
+            if (message != null && !message.isBlank()) {
                 String line = String.format("[%s] %s", LocalTime.now().withNano(0), message);
-                reportsArea.appendText(line + System.lineSeparator());
+                // TextArea güncellemesi de bir arayüz işlemidir
+                Platform.runLater(() -> reportsArea.appendText(line + System.lineSeparator()));
             }
         });
 
@@ -82,9 +90,8 @@ public class HelloController {
         reportThread.setDaemon(true);
         reportThread.start();
 
-        drawCompass();
+        Platform.runLater(this::drawCompass);
     }
-
 
     private void drawCompass() {
         GraphicsContext gc = compassCanvas.getGraphicsContext2D();
@@ -115,10 +122,10 @@ public class HelloController {
 
         gc.setFill(Color.BLACK);
         gc.setFont(javafx.scene.text.Font.font("Courier New", 13));
-        gc.fillText("0°", cx - 6, cy - radius +20);
+        gc.fillText("0°", cx - 6, cy - radius + 20);
         gc.fillText("90°", cx + radius - 30, cy + 5);
         gc.fillText("180°", cx - 13, cy + radius - 15);
-        gc.fillText("270°", cx - radius +10, cy + 5);
+        gc.fillText("270°", cx - radius + 10, cy + 5);
 
         Color needleColor = Color.web("#2b2b33");
         drawNeedle(gc, cx, cy, radius, currentPlatformAngle, needleColor);
@@ -145,9 +152,13 @@ public class HelloController {
         gc.strokeLine(x, y, rightX, rightY);
     }
 
-
     @FXML
     protected void onFireButtonClick() {
+        if ("NOT READY".equals(readyLabel.getText())) {
+            logger.warn("System is NOT READY. Fire command ignored.");
+            return;
+        }
+
         try {
             double x = Double.parseDouble(targetXField.getText());
             double y = Double.parseDouble(targetYField.getText());
@@ -158,6 +169,23 @@ public class HelloController {
             producer.sendCommand(new LaunchCommand("FIRE", telemetry));
 
             logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
+
+            // 1. Ateşlendiği an butonu/sistemi NOT READY konumuna al
+            readyLabel.setText("NOT READY");
+            readyLabel.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
+
+            PauseTransition reloadTimer = new PauseTransition(Duration.seconds(3));
+
+            reloadTimer.setOnFinished(event -> {
+                if ("CONNECTED".equals(connectionLabel.getText())) {
+                    readyLabel.setText("READY");
+                    readyLabel.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
+                    logger.info("System is READY again.");
+                }
+            });
+
+            reloadTimer.play();
+
         } catch (NumberFormatException e) {
             logger.warn("Invalid X or Y value entered.");
         }
@@ -177,7 +205,9 @@ public class HelloController {
 
     @FXML
     protected void onReportsButtonClick() {
-        logger.info("Reports panel toggled (already visible at bottom).");
+        // Görünürlüğü aç/kapa mantığı eklendi
+        reportsArea.setVisible(!reportsArea.isVisible());
+        logger.info("Reports panel toggled.");
     }
 
     public void shutdown() {
@@ -187,3 +217,4 @@ public class HelloController {
         logger.info("Kafka connections closed safely.");
     }
 }
+
