@@ -8,13 +8,15 @@ public class SystemStatus {
     private long timestamp;
     private double xCoordinate;
     private double yCoordinate;
-    private int ammoCount;
-    private String ammoType;
-    private String reportMessage;
+    private int ammoCount = 200;
+    private String ammoType = "HE_120MM";
+    private String reportMessage = "OK";
 
+    private boolean aimed;
     private boolean readyToFire;
 
     public SystemStatus() {
+        this.readyToFire = evaluateReadyToFire();
     }
 
     public SystemStatus(boolean connected, String availability, double platformAngle, double cannonAngle, long timestamp) {
@@ -45,8 +47,9 @@ public class SystemStatus {
         boolean hasAmmo = this.ammoCount > 0;
         boolean noFault = this.reportMessage == null || !this.reportMessage.toUpperCase().contains("FAULT");
         boolean isServiceReady = "READY".equalsIgnoreCase(this.availability) || "IDLE".equalsIgnoreCase(this.availability);
+        boolean isAimed = this.aimed;
 
-        return hasConnection && noFault && hasAmmo && isServiceReady;
+        return hasConnection && noFault && hasAmmo && isServiceReady && isAimed;
     }
 
     public boolean isConnected() {
@@ -130,6 +133,15 @@ public class SystemStatus {
 
     public void setReportMessage(String reportMessage) {
         this.reportMessage = reportMessage;
+        this.readyToFire = evaluateReadyToFire();
+    }
+
+    public boolean isAimed() {
+        return aimed;
+    }
+
+    public void setAimed(boolean aimed) {
+        this.aimed = aimed;
         this.readyToFire = evaluateReadyToFire();
     }
 
