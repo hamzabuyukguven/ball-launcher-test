@@ -44,20 +44,19 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        String kafkaBootstrapServers = "172.20.10.3:9092";
+        String kafkaBootstrapServers = "172.20.10.6:9092";
 
         producer = new CommandProducer(kafkaBootstrapServers);
         logger.info("Kafka producer is ready.");
 
         consumer = new SystemStatusConsumer(kafkaBootstrapServers, "frontend-group", status -> {
-            // Arayüz güncellemeleri MUTLAKA Platform.runLater içinde olmalı
             Platform.runLater(() -> {
                 connectionLabel.setText(status.isConnected() ? "CONNECTED" : "DISCONNECTED");
                 connectionLabel.setStyle(status.isConnected()
                         ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
                         : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
 
-                boolean ready = "READY".equalsIgnoreCase(status.getAvailability());
+                boolean ready = status.isReadyToFire();
                 readyLabel.setText(ready ? "READY" : "NOT READY");
                 readyLabel.setStyle(ready
                         ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
@@ -66,10 +65,11 @@ public class HelloController {
                 currentPlatformAngle = status.getPlatformAngle();
                 currentCannonAngle = status.getCannonAngle();
                 drawCompass();
+
+                ammunitionField.setText(String.valueOf(status.getAmmoCount()));
             });
         });
 
-        // Compass boyut değişim dinleyicileri
         compassCanvas.widthProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::drawCompass));
         compassCanvas.heightProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::drawCompass));
 
@@ -81,7 +81,7 @@ public class HelloController {
             String message = report.getReportMessage();
             if (message != null && !message.isBlank()) {
                 String line = String.format("[%s] %s", LocalTime.now().withNano(0), message);
-                // TextArea güncellemesi de bir arayüz işlemidir
+
                 Platform.runLater(() -> reportsArea.appendText(line + System.lineSeparator()));
             }
         });
@@ -103,7 +103,6 @@ public class HelloController {
 
         gc.clearRect(0, 0, w, h);
 
-        // Dış daire
         gc.setFill(Color.web("#b0b0b0"));
         gc.fillOval(cx - radius, cy - radius, radius * 2, radius * 2);
         gc.setStroke(Color.BLACK);
@@ -170,7 +169,6 @@ public class HelloController {
 
             logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
 
-            // 1. Ateşlendiği an butonu/sistemi NOT READY konumuna al
             readyLabel.setText("NOT READY");
             readyLabel.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
 
@@ -205,7 +203,6 @@ public class HelloController {
 
     @FXML
     protected void onReportsButtonClick() {
-        // Görünürlüğü aç/kapa mantığı eklendi
         reportsArea.setVisible(!reportsArea.isVisible());
         logger.info("Reports panel toggled.");
     }
