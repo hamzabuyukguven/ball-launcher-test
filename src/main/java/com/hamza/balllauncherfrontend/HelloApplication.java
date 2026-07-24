@@ -9,19 +9,22 @@ import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
 import java.io.IOException;
 
 public class HelloApplication extends Application {
-    @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 730, 850);
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
+@Override
+public void start(Stage stage) throws IOException {
+    FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+    Scene scene = new Scene(fxmlLoader.load(), 730, 850);
 
-        Thread consumerThread = new Thread(new SystemStatusConsumer("172.20.10.3:9092", "frontend-group", message ->{
-            System.out.println("gelen mesaj:" +message);
-        }));
-        consumerThread.setDaemon(true);
-        consumerThread.start();
+    HelloController controller = fxmlLoader.getController();
 
-    }
+    stage.setTitle("Ball Launcher Control Panel");
+    stage.setScene(scene);
+
+    stage.setOnCloseRequest(event -> {
+        if (controller != null) {
+            controller.shutdown();
+        }
+    });
+
+    stage.show();
+}
 }
