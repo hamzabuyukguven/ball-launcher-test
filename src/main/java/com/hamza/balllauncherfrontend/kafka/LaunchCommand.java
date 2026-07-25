@@ -2,22 +2,22 @@ package com.hamza.balllauncherfrontend.kafka;
 
 public class LaunchCommand {
 
-    private String action;
+    private LauncherAction action;
     private LauncherTelemetry telemetry;
 
     public LaunchCommand() {
     }
 
-    public LaunchCommand(String action, LauncherTelemetry telemetry) {
+    public LaunchCommand(LauncherAction action, LauncherTelemetry telemetry) {
         this.action = action;
         this.telemetry = telemetry;
     }
 
-    public String getAction() {
+    public LauncherAction getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(LauncherAction action) {
         this.action = action;
     }
 

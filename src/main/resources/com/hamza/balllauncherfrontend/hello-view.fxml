@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ComboBox?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.hamza.balllauncherfrontend.HelloController"
@@ -49,8 +50,13 @@
         <Label text="AMMUNITION" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
         <TextField fx:id="ammunitionField" alignment="CENTER" editable="false" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
 
+        <Button text="SET TARGET" onAction="#onSetTargetButtonClick"
+                style="-fx-background-color: #8e7cc3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
         <Label text="BALL TYPE" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <TextField fx:id="ballTypeField" alignment="CENTER" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+        <ComboBox fx:id="ballTypeField" promptText="Select Ball Type"
+                  maxWidth="Infinity"
+                  style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
     </VBox>
 
     <Canvas fx:id="compassCanvas" width="260.0" height="260.0"

@@ -5,9 +5,11 @@ import com.hamza.balllauncherfrontend.kafka.LaunchCommand;
 import com.hamza.balllauncherfrontend.kafka.LauncherTelemetry;
 import com.hamza.balllauncherfrontend.kafka.SystemStatusConsumer;
 import com.hamza.balllauncherfrontend.kafka.SystemReportConsumer;
+import com.hamza.balllauncherfrontend.kafka.LauncherAction;
 
 import javafx.application.Platform;
 import javafx.animation.PauseTransition;
+import javafx.scene.control.ComboBox;
 import javafx.util.Duration;
 import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
@@ -29,7 +31,7 @@ public class HelloController {
     @FXML private TextField targetXField;
     @FXML private TextField targetYField;
     @FXML private TextField ammunitionField;
-    @FXML private TextField ballTypeField;
+    @FXML private ComboBox<String> ballTypeField;
     @FXML private Label connectionLabel;
     @FXML private Label readyLabel;
     @FXML private Canvas compassCanvas;
@@ -44,7 +46,7 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        String kafkaBootstrapServers = "172.20.10.6:9092";
+        String kafkaBootstrapServers = AppConfig.getKafkaBootstrapServers();
 
         producer = new CommandProducer(kafkaBootstrapServers);
         logger.info("Kafka producer is ready.");
@@ -67,6 +69,9 @@ public class HelloController {
                 drawCompass();
 
                 ammunitionField.setText(String.valueOf(status.getAmmoCount()));
+
+                ballTypeField.getItems().addAll("A", "B", "C");
+                ballTypeField.getSelectionModel().selectFirst();
             });
         });
 
@@ -165,7 +170,7 @@ public class HelloController {
             LauncherTelemetry telemetry = new LauncherTelemetry(x, y);
 
             producer.sendTelemetry(x, y);
-            producer.sendCommand(new LaunchCommand("FIRE", telemetry));
+            producer.sendCommand(new LaunchCommand(LauncherAction.FIRE, telemetry));
 
             logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
 
@@ -191,13 +196,13 @@ public class HelloController {
 
     @FXML
     protected void onStowButtonClick() {
-        producer.sendCommand(new LaunchCommand("STOW", null));
+        producer.sendCommand(new LaunchCommand(LauncherAction.STOW, null));
         logger.info("STOW command sent.");
     }
 
     @FXML
     protected void onEmergencyStopButtonClick() {
-        producer.sendCommand(new LaunchCommand("EMERGENCY_STOP", null));
+        producer.sendCommand(new LaunchCommand(LauncherAction.EMERGENCY_STOP, null));
         logger.warn("EMERGENCY STOP command sent!");
     }
 
@@ -205,6 +210,22 @@ public class HelloController {
     protected void onReportsButtonClick() {
         reportsArea.setVisible(!reportsArea.isVisible());
         logger.info("Reports panel toggled.");
+    }
+    @FXML
+    protected void onSetTargetButtonClick() {
+        try {
+            double x = Double.parseDouble(targetXField.getText());
+            double y = Double.parseDouble(targetYField.getText());
+
+            LauncherTelemetry telemetry = new LauncherTelemetry(x, y);
+
+            producer.sendTelemetry(x, y);
+            producer.sendCommand(new LaunchCommand(LauncherAction.SET_MANUAL_TARGET, telemetry));
+
+            logger.info("SET_MANUAL_TARGET command sent for X:{} Y:{}", x, y);
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid X or Y value entered.");
+        }
     }
 
     public void shutdown() {
