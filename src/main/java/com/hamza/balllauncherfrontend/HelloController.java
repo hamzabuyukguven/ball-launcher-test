@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javafx.scene.text.FontWeight;
 
 import java.time.LocalTime;
 
@@ -88,8 +89,11 @@ public class HelloController {
             String message = report.getReportMessage();
             if (message != null && !message.isBlank()) {
                 String line = String.format("[%s] %s", LocalTime.now().withNano(0), message);
-
-                Platform.runLater(() -> reportsArea.appendText(line + System.lineSeparator()));
+                Platform.runLater(() -> {
+                    reportsArea.appendText(line + System.lineSeparator());
+                    trimReportsIfNeeded();
+                    reportsArea.setScrollTop(Double.MAX_VALUE);
+                });
             }
         });
 
@@ -110,52 +114,87 @@ public class HelloController {
 
         gc.clearRect(0, 0, w, h);
 
-        gc.setFill(Color.web("#b0b0b0"));
+        gc.setFill(Color.rgb(0, 0, 0, 0.25));
+        gc.fillOval(cx - radius + 3, cy - radius + 4, radius * 2, radius * 2);
+
+        gc.setFill(Color.web("#c4c6ca"));
         gc.fillOval(cx - radius, cy - radius, radius * 2, radius * 2);
-        gc.setStroke(Color.BLACK);
-        gc.setLineWidth(1.5);
+        gc.setFill(Color.web("#d8dadd"));
+        gc.fillOval(cx - radius + 4, cy - radius + 4, radius * 2 - 8, radius * 2 - 8);
+
+        gc.setStroke(Color.web("#1a1a1a"));
+        gc.setLineWidth(2);
         gc.strokeOval(cx - radius, cy - radius, radius * 2, radius * 2);
 
-        gc.setLineWidth(1);
         for (int deg = 0; deg < 360; deg += 10) {
             double rad = Math.toRadians(deg - 90);
+            boolean major = deg % 30 == 0;
+            double tickLength = major ? 12 : 6;
+            gc.setLineWidth(major ? 1.8 : 1);
+            gc.setStroke(Color.web("#1a1a1a"));
+
             double outerX = cx + radius * Math.cos(rad);
             double outerY = cy + radius * Math.sin(rad);
-            double innerX = cx + (radius - 8) * Math.cos(rad);
-            double innerY = cy + (radius - 8) * Math.sin(rad);
+            double innerX = cx + (radius - tickLength) * Math.cos(rad);
+            double innerY = cy + (radius - tickLength) * Math.sin(rad);
             gc.strokeLine(innerX, innerY, outerX, outerY);
         }
 
-        gc.setFill(Color.BLACK);
-        gc.setFont(javafx.scene.text.Font.font("Courier New", 13));
-        gc.fillText("0°", cx - 6, cy - radius + 20);
-        gc.fillText("90°", cx + radius - 30, cy + 5);
-        gc.fillText("180°", cx - 13, cy + radius - 15);
-        gc.fillText("270°", cx - radius + 10, cy + 5);
+        drawNeedle(gc, cx, cy, radius, currentPlatformAngle, Color.web("#2b2b33"), 4);
+        drawNeedle(gc, cx, cy, radius, currentCannonAngle, Color.web("#c0392b"), 3);
 
-        Color needleColor = Color.web("#2b2b33");
-        drawNeedle(gc, cx, cy, radius, currentPlatformAngle, needleColor);
-        drawNeedle(gc, cx, cy, radius, currentCannonAngle, needleColor);
+        gc.setFont(javafx.scene.text.Font.font("Courier New", javafx.scene.text.FontWeight.BOLD, 13));
+        drawLabelWithBackground(gc, "0°", cx - 8, cy - radius + 22);
+        drawLabelWithBackground(gc, "90°", cx + radius - 36, cy + 5);
+        drawLabelWithBackground(gc, "180°", cx - 16, cy + radius - 10);
+        drawLabelWithBackground(gc, "270°", cx - radius + 6, cy + 5);
+
+        gc.setFill(Color.web("#1a1a1a"));
+        gc.fillOval(cx - 5, cy - 5, 10, 10);
+        gc.setFill(Color.web("#e07856"));
+        gc.fillOval(cx - 2.5, cy - 2.5, 5, 5);
     }
 
-    private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius, double angleDegrees, Color color) {
+    private void drawLabelWithBackground(GraphicsContext gc, String text, double x, double y) {
+        double padding = 3;
+        double textWidth = text.length() * 8;
+        gc.setFill(Color.rgb(216, 218, 221, 0.9));
+        gc.fillRect(x - padding, y - 12, textWidth + padding * 2, 16);
+        gc.setFill(Color.web("#1a1a1a"));
+        gc.fillText(text, x, y);
+    }
+
+    private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius, double angleDegrees, Color color, double lineWidth) {
         double rad = Math.toRadians(angleDegrees - 90);
-        double x = cx + radius * 0.75 * Math.cos(rad);
-        double y = cy + radius * 0.75 * Math.sin(rad);
+        double x = cx + radius * 0.68* Math.cos(rad);
+        double y = cy + radius * 0.68 * Math.sin(rad);
 
         gc.setStroke(color);
-        gc.setLineWidth(3);
+        gc.setLineWidth(lineWidth);
         gc.strokeLine(cx, cy, x, y);
 
         double arrowLength = 12;
-        double arrowAngle = Math.toRadians(25);
+        double arrowAngle = Math.toRadians(22);
         double leftX = x - arrowLength * Math.cos(rad - arrowAngle);
         double leftY = y - arrowLength * Math.sin(rad - arrowAngle);
         double rightX = x - arrowLength * Math.cos(rad + arrowAngle);
         double rightY = y - arrowLength * Math.sin(rad + arrowAngle);
 
+        gc.setLineWidth(lineWidth * 0.8);
         gc.strokeLine(x, y, leftX, leftY);
         gc.strokeLine(x, y, rightX, rightY);
+    }
+
+    private void trimReportsIfNeeded() {
+        String[] lines = reportsArea.getText().split("\n");
+        int maxLines = AppConfig.getReportsMaxLines();
+        if (lines.length > maxLines) {
+            StringBuilder trimmed = new StringBuilder();
+            for (int i = lines.length - maxLines; i < lines.length; i++) {
+                trimmed.append(lines[i]).append("\n");
+            }
+            reportsArea.setText(trimmed.toString());
+        }
     }
 
     @FXML

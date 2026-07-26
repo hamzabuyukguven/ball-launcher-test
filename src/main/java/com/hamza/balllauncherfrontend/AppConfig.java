@@ -32,4 +32,12 @@ public class AppConfig {
         }
         return properties.getProperty("kafka.bootstrap.servers", "localhost:9092");
     }
+
+    public static int getReportsMaxLines() {
+        try {
+            return Integer.parseInt(properties.getProperty("reports.max.lines", "200"));
+        } catch (NumberFormatException e) {
+            return 200;
+        }
+    }
 }
