@@ -46,6 +46,10 @@ public class HelloController {
 
     @FXML
     public void initialize() {
+
+        ballTypeField.getItems().addAll("A", "B", "C");
+        ballTypeField.getSelectionModel().selectFirst();
+
         String kafkaBootstrapServers = AppConfig.getKafkaBootstrapServers();
 
         producer = new CommandProducer(kafkaBootstrapServers);
@@ -70,8 +74,6 @@ public class HelloController {
 
                 ammunitionField.setText(String.valueOf(status.getAmmoCount()));
 
-                ballTypeField.getItems().addAll("A", "B", "C");
-                ballTypeField.getSelectionModel().selectFirst();
             });
         });
 
@@ -235,4 +237,5 @@ public class HelloController {
         logger.info("Kafka connections closed safely.");
     }
 }
+
 
