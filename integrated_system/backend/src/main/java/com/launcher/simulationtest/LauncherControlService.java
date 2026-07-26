@@ -242,19 +242,199 @@ public class LauncherControlService {
     }
 
     private void calculateTargetAngles() {
-        double dx = targetX;
-        double dy = targetY;
-        double dz = targetZ;
+        /*
+         * Active Heybeliada model geometry:
+         *
+         * ship_link -> pan_link:
+         *   x = 31.057680 m, z = 6.183503 m
+         *
+         * pan_link -> tilt_link:
+         *   x = 0.113315 m, z = 1.351354 m
+         *
+         * tilt_link -> muzzle_link:
+         *   x = 5.35 m
+         */
+        final double turretPivotForwardOffset =
+                31.057680 + 0.113315;
+
+        final double turretPivotHeightOffset =
+                6.183503 + 1.351354;
+
+        final double barrelLength = 5.35;
+        final double minimumDistance = 1e-6;
+
+        double turretWorldX = 0.0;
+        double turretWorldY = 0.0;
+        double turretWorldZ = 0.0;
 
         if (ownshipPoseAvailable) {
-            dx -= ownshipX;
-            dy -= ownshipY;
-            dz -= ownshipZ;
+            double cosYaw = Math.cos(ownshipYawRad);
+            double sinYaw = Math.sin(ownshipYawRad);
+
+            turretWorldX =
+                    ownshipX
+                    + turretPivotForwardOffset * cosYaw;
+
+            turretWorldY =
+                    ownshipY
+                    + turretPivotForwardOffset * sinYaw;
+
+            turretWorldZ =
+                    ownshipZ
+                    + turretPivotHeightOffset;
         }
 
-        double horizontalDistance = Math.hypot(dx, dy);
-        targetPanRad = normalizeAngle(Math.atan2(dy, dx) - ownshipYawRad);
-        targetTiltRad = Math.atan2(dz, Math.max(horizontalDistance, 1e-6));
+        double dx;
+        double dy;
+        double horizontalDistanceToPivot;
+
+        if (ownshipPoseAvailable) {
+            dx = targetX - turretWorldX;
+            dy = targetY - turretWorldY;
+
+            horizontalDistanceToPivot =
+                    Math.hypot(dx, dy);
+
+            targetPanRad = normalizeAngle(
+                    Math.atan2(dy, dx)
+                    - ownshipYawRad
+            );
+        } else {
+            /*
+             * Preserve relative-target fallback behaviour when platform
+             * telemetry has not become available yet.
+             */
+            dx = targetX;
+            dy = targetY;
+
+            horizontalDistanceToPivot =
+                    Math.hypot(dx, dy);
+
+            targetPanRad = normalizeAngle(
+                    Math.atan2(dy, dx)
+            );
+
+            turretWorldZ = 0.0;
+        }
+
+        /*
+         * The muzzle position depends on tilt because the muzzle_link is
+         * located at the end of the 5.35 m barrel. Iterate a few times to
+         * solve the launch angle and muzzle position consistently.
+         */
+        double estimatedTilt = Math.atan2(
+                targetZ - turretWorldZ,
+                Math.max(
+                        horizontalDistanceToPivot - barrelLength,
+                        minimumDistance
+                )
+        );
+
+        for (int iteration = 0; iteration < 5; iteration++) {
+            double muzzleHorizontalOffset =
+                    barrelLength * Math.cos(estimatedTilt);
+
+            double muzzleVerticalOffset =
+                    barrelLength * Math.sin(estimatedTilt);
+
+            double horizontalDistanceFromMuzzle =
+                    Math.max(
+                            horizontalDistanceToPivot
+                            - muzzleHorizontalOffset,
+                            minimumDistance
+                    );
+
+            double muzzleWorldZ =
+                    turretWorldZ
+                    + muzzleVerticalOffset;
+
+            double heightDifferenceFromMuzzle =
+                    targetZ
+                    - muzzleWorldZ;
+
+            double nextTilt = calculateBallisticTilt(
+                    horizontalDistanceFromMuzzle,
+                    heightDifferenceFromMuzzle,
+                    muzzleVelocity
+            );
+
+            if (!Double.isFinite(nextTilt)) {
+                break;
+            }
+
+            estimatedTilt = nextTilt;
+        }
+
+        /*
+         * Small simulation calibration: raise the barrel by 0.05 degrees
+         * to compensate for the projectile landing slightly short.
+         */
+        final double ballisticCalibrationOffsetRad =
+                Math.toRadians(0.08);
+
+        targetTiltRad =
+                estimatedTilt
+                + ballisticCalibrationOffsetRad;
+    }
+
+    private static double calculateBallisticTilt(
+            double horizontalDistance,
+            double heightDifference,
+            double muzzleVelocity) {
+
+        final double gravity = 9.80665;
+        final double minimumDistance = 1e-6;
+
+        double distance = Math.max(
+                horizontalDistance,
+                minimumDistance
+        );
+
+        double lineOfSightTilt = Math.atan2(
+                heightDifference,
+                distance
+        );
+
+        if (!Double.isFinite(muzzleVelocity)
+                || muzzleVelocity <= 0.0
+                || horizontalDistance < minimumDistance) {
+            return lineOfSightTilt;
+        }
+
+        double velocitySquared =
+                muzzleVelocity * muzzleVelocity;
+
+        double discriminant =
+                velocitySquared * velocitySquared
+                - gravity * (
+                    gravity * distance * distance
+                    + 2.0
+                    * heightDifference
+                    * velocitySquared
+                );
+
+        /*
+         * A negative discriminant means that the target cannot be reached
+         * with the configured muzzle velocity in the ideal ballistic model.
+         * Keep the previous line-of-sight behaviour as a safe fallback.
+         */
+        if (!Double.isFinite(discriminant)
+                || discriminant < 0.0) {
+            return lineOfSightTilt;
+        }
+
+        double tangent =
+                (
+                    velocitySquared
+                    - Math.sqrt(discriminant)
+                )
+                / (gravity * distance);
+
+        double ballisticTilt = Math.atan(tangent);
+
+        return Double.isFinite(ballisticTilt)
+                ? ballisticTilt
+                : lineOfSightTilt;
     }
 
     private void fireWhenSafe() {
