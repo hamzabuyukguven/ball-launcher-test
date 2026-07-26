@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ball Launcher + Ship Control
+Comment=Start Gazebo, backend, frontend and Ship Control Panel
+Exec=/usr/bin/bash /home/fatih/start_ball_launcher_with_ship_panel.sh
+Terminal=false
+Icon=applications-engineering
+Categories=Development;
+StartupNotify=false

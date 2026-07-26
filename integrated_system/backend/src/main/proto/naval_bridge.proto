@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package naval_bridge;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.heybeliada.grpc";
+option java_outer_classname = "NavalBridgeProto";
+
+service NavalBridgeService {
+  rpc SendGunRateCommand(
+      GunRateCommandRequest
+      ) returns (
+      CommandReply
+      );
+
+  rpc SendFireCommand(
+      FireCommandRequest
+      ) returns (
+      CommandReply
+      );
+
+  rpc StreamTargetPosition(
+      SubscribeRequest
+      ) returns (
+      stream TargetPositionInfo
+      );
+
+  rpc StreamGunInfo(
+      SubscribeRequest
+      ) returns (
+      stream GunInfo
+      );
+
+  rpc StreamGunStatus(
+      SubscribeRequest
+      ) returns (
+      stream GunStatusInfo
+      );
+
+  rpc StreamPlatformPosition(
+      SubscribeRequest
+      ) returns (
+      stream PlatformPositionInfo
+      );
+
+  rpc StreamPlatformVelocity(
+      SubscribeRequest
+      ) returns (
+      stream PlatformVelocityInfo
+      );
+
+  rpc StreamStabilizationData(
+      SubscribeRequest
+      ) returns (
+      stream StabilizationData
+      );
+
+  rpc StreamPlatformStatus(
+      SubscribeRequest
+      ) returns (
+      stream PlatformStatusInfo
+      );
+
+  rpc StreamHeartbeat(
+      SubscribeRequest
+      ) returns (
+      stream Heartbeat
+      );
+}
+
+message SubscribeRequest {
+  string client_id = 1;
+}
+
+message GunRateCommandRequest {
+  uint64 sequence = 1;
+  double pan_rate = 2;
+  double tilt_rate = 3;
+  bool control_enabled = 4;
+
+  reserved 5;
+  reserved 7;
+  reserved "fire";
+  reserved "muzzle_velocity_mps";
+
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message FireCommandRequest {
+  uint64 sequence = 1;
+  double muzzle_velocity = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message TargetPositionInfo {
+  uint64 sequence = 1;
+  string target_id = 2;
+  double position_x = 3;
+  double position_y = 4;
+  double position_z = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message GunInfo {
+  uint64 sequence = 1;
+  string gun_id = 2;
+  double pan_angle = 3;
+  double tilt_angle = 4;
+  double pan_rate = 5;
+  double tilt_rate = 6;
+
+  reserved 7, 8, 9, 10, 11, 12, 13;
+  reserved "commanded_pan_rate";
+  reserved "commanded_tilt_rate";
+  reserved "control_enabled";
+  reserved "ready_to_fire";
+  reserved "firing";
+  reserved "fault";
+  reserved "fault_text";
+
+  google.protobuf.Timestamp timestamp = 14;
+}
+
+message GunStatusInfo {
+  uint64 sequence = 1;
+  string gun_id = 2;
+  bool control_enabled = 3;
+  bool ready_to_fire = 4;
+  bool firing = 5;
+  bool fault = 6;
+  string fault_text = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+message PlatformPositionInfo {
+  uint64 sequence = 1;
+  string platform_id = 2;
+  double position_x = 3;
+  double position_y = 4;
+  double position_z = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message PlatformVelocityInfo {
+  uint64 sequence = 1;
+  string platform_id = 2;
+  double velocity_x = 3;
+  double velocity_y = 4;
+  double velocity_z = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message StabilizationData {
+  uint64 sequence = 1;
+  string platform_id = 2;
+  double roll = 3;
+  double pitch = 4;
+  double yaw = 5;
+  double roll_rate = 6;
+  double pitch_rate = 7;
+  double yaw_rate = 8;
+  google.protobuf.Timestamp timestamp = 9;
+}
+
+message PlatformStatusInfo {
+  uint64 sequence = 1;
+  string platform_id = 2;
+  bool simulation_ready = 3;
+  string mode = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message Heartbeat {
+  uint64 sequence = 1;
+  string component = 2;
+  bool healthy = 3;
+  string state = 4;
+  double uptime = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message CommandReply {
+  bool accepted = 1;
+  string message = 2;
+  uint64 sequence = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}

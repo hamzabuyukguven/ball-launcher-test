@@ -1,0 +1,10 @@
+# Local-only target movement bridge.
+# It mirrors the main ship Twist / cmd_vel path but never uses /backend/*.
+- ros_topic_name: "/test/target_cmd_vel"
+  gz_topic_name: "/model/wam_v/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+  subscriber_queue: 10
+  publisher_queue: 10
+  lazy: false

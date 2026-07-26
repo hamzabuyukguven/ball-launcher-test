@@ -1,0 +1,234 @@
+#include <memory>
+#include <string>
+
+#include <gz/common/Console.hh>
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/plugin/Register.hh>
+#include <gz/sim/Entity.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/Link.hh>
+#include <gz/sim/Model.hh>
+#include <gz/sim/System.hh>
+#include <gz/sim/Util.hh>
+
+#include <sdf/Element.hh>
+
+
+namespace projectile_launch_plugin
+{
+
+class ProjectileLaunchSystem:
+    public gz::sim::System,
+    public gz::sim::ISystemConfigure,
+    public gz::sim::ISystemPreUpdate
+{
+public:
+    void Configure(
+        const gz::sim::Entity &_entity,
+        const std::shared_ptr<const sdf::Element> &_sdf,
+        gz::sim::EntityComponentManager &,
+        gz::sim::EventManager &) override
+    {
+        this->projectileModelEntity = _entity;
+
+        if (_sdf->HasElement("reference_model"))
+        {
+            this->referenceModel =
+                _sdf->Get<std::string>("reference_model");
+        }
+
+        if (_sdf->HasElement("reference_link"))
+        {
+            this->referenceLink =
+                _sdf->Get<std::string>("reference_link");
+        }
+
+        if (_sdf->HasElement("local_velocity"))
+        {
+            this->localVelocity =
+                _sdf->Get<gz::math::Vector3d>(
+                    "local_velocity");
+        }
+
+        if (_sdf->HasElement("clearance"))
+        {
+            this->clearance =
+                _sdf->Get<double>("clearance");
+        }
+
+        gzmsg
+            << "[ProjectileLaunchSystem] Hazır | "
+            << "referans="
+            << this->referenceModel
+            << "::"
+            << this->referenceLink
+            << " | yerel hız="
+            << this->localVelocity
+            << std::endl;
+    }
+
+    void PreUpdate(
+        const gz::sim::UpdateInfo &_info,
+        gz::sim::EntityComponentManager &_ecm) override
+    {
+        if (_info.paused || this->phase >= 2)
+        {
+            return;
+        }
+
+        gz::sim::Model projectileModel(
+            this->projectileModelEntity);
+
+        if (!projectileModel.Valid(_ecm))
+        {
+            return;
+        }
+
+        // Birinci aşama:
+        // Gerçek muzzle_link dünya pozunu bul ve mermiyi oraya taşı.
+        if (this->phase == 0)
+        {
+            const std::string scopedName =
+                this->referenceModel
+                + "::"
+                + this->referenceLink;
+
+            const auto entities =
+                gz::sim::entitiesFromScopedName(
+                    scopedName,
+                    _ecm);
+
+            gz::sim::Entity muzzleEntity =
+                gz::sim::kNullEntity;
+
+            for (const auto entity : entities)
+            {
+                gz::sim::Link candidate(entity);
+
+                if (candidate.Valid(_ecm))
+                {
+                    muzzleEntity = entity;
+                    break;
+                }
+            }
+
+            if (muzzleEntity == gz::sim::kNullEntity)
+            {
+                return;
+            }
+
+            const gz::math::Pose3d muzzlePose =
+                gz::sim::worldPose(
+                    muzzleEntity,
+                    _ecm);
+
+            const gz::math::Vector3d forwardOffset =
+                muzzlePose.Rot().RotateVector(
+                    gz::math::Vector3d(
+                        this->clearance,
+                        0.0,
+                        0.0));
+
+            const gz::math::Vector3d spawnPosition =
+                muzzlePose.Pos()
+                + forwardOffset;
+
+            const gz::math::Pose3d spawnPose(
+                spawnPosition,
+                muzzlePose.Rot());
+
+            projectileModel.SetWorldPoseCmd(
+                _ecm,
+                spawnPose);
+
+            this->phase = 1;
+            this->waitSteps = 0;
+
+            gzmsg
+                << "[ProjectileLaunchSystem] "
+                << "Mermi namluya taşındı | pose="
+                << spawnPose
+                << std::endl;
+
+            return;
+        }
+
+        // Pose komutunun fiziğe uygulanması için birkaç adım bekle.
+        if (this->phase == 1)
+        {
+            ++this->waitSteps;
+
+            if (this->waitSteps < 3)
+            {
+                return;
+            }
+
+            const gz::sim::Entity canonicalLinkEntity =
+                projectileModel.CanonicalLink(_ecm);
+
+            if (
+                canonicalLinkEntity
+                == gz::sim::kNullEntity)
+            {
+                return;
+            }
+
+            gz::sim::Link projectileLink(
+                canonicalLinkEntity);
+
+            if (!projectileLink.Valid(_ecm))
+            {
+                return;
+            }
+
+            // Mermi, muzzle_link ile aynı rotasyona taşındığı için
+            // bu hız mermi / namlu yerel koordinatındadır.
+            projectileLink.SetLinearVelocity(
+                _ecm,
+                this->localVelocity);
+
+            this->phase = 2;
+
+            gzmsg
+                << "[ProjectileLaunchSystem] "
+                << "Mermi başlangıç hızı uygulandı | "
+                << this->localVelocity
+                << " m/s"
+                << std::endl;
+        }
+    }
+
+private:
+    gz::sim::Entity projectileModelEntity{
+        gz::sim::kNullEntity};
+
+    std::string referenceModel{
+        "heybeliada_ship"};
+
+    std::string referenceLink{
+        "muzzle_link"};
+
+    gz::math::Vector3d localVelocity{
+        5.0,
+        0.0,
+        0.0};
+
+    double clearance{0.30};
+
+    int phase{0};
+    int waitSteps{0};
+};
+
+}  // namespace projectile_launch_plugin
+
+
+GZ_ADD_PLUGIN(
+    projectile_launch_plugin::ProjectileLaunchSystem,
+    gz::sim::System,
+    projectile_launch_plugin::ProjectileLaunchSystem::ISystemConfigure,
+    projectile_launch_plugin::ProjectileLaunchSystem::ISystemPreUpdate)
+
+GZ_ADD_PLUGIN_ALIAS(
+    projectile_launch_plugin::ProjectileLaunchSystem,
+    "projectile_launch_plugin::ProjectileLaunchSystem")

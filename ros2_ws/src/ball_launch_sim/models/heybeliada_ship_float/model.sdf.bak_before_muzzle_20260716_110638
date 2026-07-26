@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="heybeliada_ship">
+    <static>false</static>
+    <self_collide>false</self_collide>
+
+    <link name="ship_link">
+      <inertial>
+        <pose>0 0 -0.4 0 0 0</pose>
+        <mass>2200000</mass>
+        <inertia>
+          <ixx>4.7e7</ixx><iyy>1.7e9</iyy><izz>1.7e9</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ship_gray_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/ship_gray.glb</uri></mesh></geometry>
+        <material><ambient>0.52 0.54 0.56 1</ambient><diffuse>0.68 0.70 0.72 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="deck_tan_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/deck_tan.glb</uri></mesh></geometry>
+        <material><ambient>0.48 0.35 0.29 1</ambient><diffuse>0.67 0.49 0.39 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="railings_gray_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/railings_gray.glb</uri></mesh></geometry>
+        <material><ambient>0.55 0.57 0.59 1</ambient><diffuse>0.76 0.78 0.80 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="glass_black_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/glass_black.glb</uri></mesh></geometry>
+        <material><ambient>0.01 0.015 0.02 1</ambient><diffuse>0.015 0.025 0.035 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="shaft_gray_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/shaft_gray.glb</uri></mesh></geometry>
+        <material><ambient>0.35 0.35 0.37 1</ambient><diffuse>0.58 0.58 0.60 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="propeller_gold_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/propeller_gold.glb</uri></mesh></geometry>
+        <material><ambient>0.42 0.28 0.02 1</ambient><diffuse>0.85 0.60 0.08 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="hull_red_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/hull_red.glb</uri></mesh></geometry>
+        <material><ambient>0.28 0.015 0.02 1</ambient><diffuse>0.55 0.025 0.035 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="waterline_black_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/waterline_black.glb</uri></mesh></geometry>
+        <material><ambient>0.01 0.01 0.01 1</ambient><diffuse>0.025 0.025 0.025 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="flag_red_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/flag_red.glb</uri></mesh></geometry>
+        <material><ambient>0.45 0.0 0.0 1</ambient><diffuse>0.88 0.0 0.0 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <visual name="flag_white_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/flag_white.glb</uri></mesh></geometry>
+        <material><ambient>0.75 0.75 0.75 1</ambient><diffuse>1 1 1 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
+      </visual>
+      <!-- Ayrıntılı CAD mesh collision olarak kullanılmıyor; performans için kaba gövde kutuları. -->
+      <collision name="hull_collision_center">
+        <pose>0 0 -1.0 0 0 0</pose>
+        <geometry><box><size>78 13 5.5</size></box></geometry>
+      </collision>
+      <collision name="hull_collision_bow">
+        <pose>42 0 -0.6 0 0 0</pose>
+        <geometry><box><size>17 9 4.5</size></box></geometry>
+      </collision>
+      <collision name="hull_collision_stern">
+        <pose>-43 0 -0.8 0 0 0</pose>
+        <geometry><box><size>13 11 5</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Test aşamasında gemi sabit. Deniz hareketi eklerken bu joint kaldırılacak. -->
+    <joint name="ship_world_fixed" type="fixed">
+      <parent>world</parent><child>ship_link</child>
+    </joint>
+
+    <link name="pan_link">
+      <pose relative_to="ship_link">31.057680 0.000000 6.183503 0 0 0</pose>
+      <inertial><mass>80</mass><inertia><ixx>90</ixx><iyy>90</iyy><izz>120</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+      <visual name="pan_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/turret_pan.glb</uri></mesh></geometry>
+        <material><ambient>0.52 0.54 0.56 1</ambient><diffuse>0.68 0.70 0.72 1</diffuse></material>
+      </visual>
+      <collision name="pan_collision"><pose>0 0 1.25 0 0 0</pose><geometry><cylinder><radius>1.75</radius><length>2.5</length></cylinder></geometry></collision>
+    </link>
+
+    <joint name="pan_joint" type="revolute">
+      <parent>ship_link</parent><child>pan_link</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-2.617994</lower><upper>2.617994</upper><effort>100000</effort><velocity>0.8</velocity></limit><dynamics><damping>15</damping><friction>2</friction></dynamics></axis>
+    </joint>
+
+    <link name="tilt_link">
+      <pose relative_to="pan_link">0.113315 0 1.351354 0 0 0</pose>
+      <inertial><pose>1.5 0 0 0 0 0</pose><mass>35</mass><inertia><ixx>30</ixx><iyy>100</iyy><izz>100</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+      <visual name="tilt_visual">
+        <geometry><mesh><uri>model://heybeliada_ship/meshes/gun_tilt.glb</uri></mesh></geometry>
+        <material><ambient>0.15 0.16 0.17 1</ambient><diffuse>0.28 0.30 0.32 1</diffuse></material>
+      </visual>
+      <collision name="tilt_collision"><pose>2.2 0 0 0 0 0</pose><geometry><box><size>5.2 1.4 1.5</size></box></geometry></collision>
+      <visual name="muzzle_marker"><pose>5.35 0 0 0 0 0</pose><geometry><sphere><radius>0.10</radius></sphere></geometry><material><ambient>1 0.05 0.05 1</ambient><diffuse>1 0.05 0.05 1</diffuse></material></visual>
+    </link>
+
+    <joint name="tilt_joint" type="revolute">
+      <parent>pan_link</parent><child>tilt_link</child>
+      <axis><xyz>0 -1 0</xyz><limit><lower>-0.0872665</lower><upper>1.2217305</upper><effort>100000</effort><velocity>0.6</velocity></limit><dynamics><damping>10</damping><friction>1</friction></dynamics></axis>
+    </joint>
+
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>pan_joint</joint_name><topic>/heybeliada/pan_cmd</topic><use_velocity_commands>true</use_velocity_commands><cmd_max>0.35</cmd_max><initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>tilt_joint</joint_name><topic>/heybeliada/tilt_cmd</topic><use_velocity_commands>true</use_velocity_commands><cmd_max>0.20</cmd_max><initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher"/>
+  </model>
+</sdf>

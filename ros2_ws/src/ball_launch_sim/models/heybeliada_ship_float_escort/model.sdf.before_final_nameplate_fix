@@ -1,0 +1,436 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.10">
+  <model name="heybeliada_ship_float">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <link name="ship_link">
+      <inertial>
+        <pose>0 0 -0.4 0 0 0</pose>
+        <mass>2200000</mass>
+        <inertia>
+          <ixx>4.7e7</ixx>
+          <iyy>1.7e9</iyy>
+          <izz>1.7e9</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ship_gray_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/ship_gray.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.52 0.54 0.56 1</ambient>
+          <diffuse>0.68 0.70 0.72 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="deck_tan_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/deck_tan.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.48 0.35 0.29 1</ambient>
+          <diffuse>0.67 0.49 0.39 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="railings_gray_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/railings_gray.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.57 0.59 1</ambient>
+          <diffuse>0.76 0.78 0.80 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="glass_black_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/glass_black.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.01 0.015 0.02 1</ambient>
+          <diffuse>0.015 0.025 0.035 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="shaft_gray_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/shaft_gray.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.35 0.35 0.37 1</ambient>
+          <diffuse>0.58 0.58 0.60 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="propeller_gold_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/propeller_gold.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.42 0.28 0.02 1</ambient>
+          <diffuse>0.85 0.60 0.08 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="hull_red_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/hull_red.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.28 0.015 0.02 1</ambient>
+          <diffuse>0.55 0.025 0.035 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="waterline_black_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/waterline_black.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.01 0.01 0.01 1</ambient>
+          <diffuse>0.025 0.025 0.025 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="flag_red_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/flag_red.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.45 0.0 0.0 1</ambient>
+          <diffuse>0.88 0.0 0.0 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <visual name="flag_white_visual">
+        <geometry>
+          <mesh>
+            <uri>model://heybeliada_ship_float/meshes/flag_white.glb</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.75 0.75 0.75 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.08 0.08 0.08 1</specular>
+        </material>
+      </visual>
+      <collision name="hull_collision_center">
+        <pose>0 0 -1.0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>78 13 5.5</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <category_bitmask>0x01</category_bitmask>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="hull_collision_bow">
+        <pose>42 0 -0.6 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>17 9 4.5</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <category_bitmask>0x01</category_bitmask>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="hull_collision_stern">
+        <pose>-43 0 -0.8 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>13 11 5</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <category_bitmask>0x01</category_bitmask>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+        </surface>
+      </collision>
+      <!-- AKSY_NAMEPLATE_BEGIN -->
+
+      <!-- Geminin iskele tarafındaki borda yazısı -->
+      <visual name="port_side_aksy_nameplate">
+        <pose>18.0 7.10 4.30 0 0 0</pose>
+
+        <geometry>
+          <plane>
+            <normal>0 1 0</normal>
+            <size>18.0 5.70</size>
+          </plane>
+        </geometry>
+
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0 0 0 1</specular>
+
+          <pbr>
+            <metal>
+              <albedo_map>model://heybeliada_ship_float/materials/textures/heybeliada_nameplate.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>1.0</roughness>
+            </metal>
+          </pbr>
+        </material>
+
+        <cast_shadows>false</cast_shadows>
+      </visual>
+
+      <!-- Geminin sancak tarafındaki borda yazısı -->
+      <visual name="starboard_side_aksy_nameplate">
+        <pose>18.0 -7.10 4.30 0 0 3.14159265</pose>
+
+        <geometry>
+          <plane>
+            <normal>0 1 0</normal>
+            <size>18.0 5.70</size>
+          </plane>
+        </geometry>
+
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0 0 0 1</specular>
+
+          <pbr>
+            <metal>
+              <albedo_map>model://heybeliada_ship_float/materials/textures/heybeliada_nameplate.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>1.0</roughness>
+            </metal>
+          </pbr>
+        </material>
+
+        <cast_shadows>false</cast_shadows>
+      </visual>
+
+      <!-- AKSY_NAMEPLATE_END -->
+
+    </link>
+    <link name="pan_link">
+      <pose relative_to="ship_link">31.057680 0.000000 6.183503 0 0 0</pose>
+      <inertial>
+        <mass>80</mass>
+        <inertia>
+          <ixx>90</ixx>
+          <iyy>90</iyy>
+          <izz>120</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="pan_visual">
+        <geometry>
+          <mesh><uri>model://heybeliada_ship_float/meshes/turret_pan_76mm.glb</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.55 0.58 1</ambient>
+          <diffuse>0.72 0.72 0.75 1</diffuse>
+        </material>
+      </visual>
+      <collision name="pan_collision">
+        <pose>0 0 1.25 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>1.75</radius>
+            <length>2.5</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <category_bitmask>0x01</category_bitmask>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <joint name="pan_joint" type="revolute">
+      <parent>ship_link</parent>
+      <child>pan_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.617994</lower>
+          <upper>2.617994</upper>
+          <effort>100000</effort>
+          <velocity>0.8</velocity>
+        </limit>
+        <dynamics>
+          <damping>15</damping>
+          <friction>2</friction>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="tilt_link">
+      <pose relative_to="pan_link">0.113315 0 1.351354 0 0 0</pose>
+      <inertial>
+        <pose>1.5 0 0 0 0 0</pose>
+        <mass>35</mass>
+        <inertia>
+          <ixx>30</ixx>
+          <iyy>100</iyy>
+          <izz>100</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="tilt_visual">
+        <geometry>
+          <mesh><uri>model://heybeliada_ship_float/meshes/gun_tilt_76mm.glb</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.28 0.28 0.30 1</ambient>
+          <diffuse>0.42 0.42 0.45 1</diffuse>
+        </material>
+      </visual>
+      <collision name="tilt_collision">
+        <pose>2.2 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>5.2 1.4 1.5</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <category_bitmask>0x01</category_bitmask>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name="muzzle_link">
+      <pose relative_to="tilt_link">5.35 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.01</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <iyy>0.00001</iyy>
+          <izz>0.00001</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name="muzzle_fixed_joint" type="fixed">
+      <parent>tilt_link</parent>
+      <child>muzzle_link</child>
+    </joint>
+    <joint name="tilt_joint" type="revolute">
+      <parent>pan_link</parent>
+      <child>tilt_link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-0.0872665</lower>
+          <upper>1.2217305</upper>
+          <effort>100000</effort>
+          <velocity>0.6</velocity>
+        </limit>
+        <dynamics>
+          <damping>10</damping>
+          <friction>1</friction>
+        </dynamics>
+      </axis>
+    </joint>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>pan_joint</joint_name>
+      <topic>/heybeliada/pan_cmd</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <cmd_max>0.35</cmd_max>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>tilt_joint</joint_name>
+      <topic>/heybeliada/tilt_cmd</topic>
+      <use_velocity_commands>true</use_velocity_commands>
+      <cmd_max>0.20</cmd_max>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher" />
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_visual_pose>false</publish_visual_pose>
+      <publish_collision_pose>false</publish_collision_pose>
+      <publish_sensor_pose>false</publish_sensor_pose>
+      <publish_model_pose>true</publish_model_pose>
+      <use_pose_vector_msg>true</use_pose_vector_msg>
+      <update_frequency>30</update_frequency>
+      <static_publisher>false</static_publisher>
+    </plugin>
+    <plugin filename="libSurface.so" name="maritime::Surface">
+      <link_name>ship_link</link_name>
+      <hull_length>90.0</hull_length>
+      <hull_radius>3.3</hull_radius>
+      <fluid_level>0.0</fluid_level>
+      <fluid_density>1000.0</fluid_density>
+      <points>
+        <point>35.0 5.0 -1.5</point>
+        <point>-35.0 5.0 -1.5</point>
+      </points>
+      <wavefield>
+        <topic>/gazebo/wavefield/parameters</topic>
+      </wavefield>
+    </plugin>
+    <plugin filename="libSurface.so" name="maritime::Surface">
+      <link_name>ship_link</link_name>
+      <hull_length>90.0</hull_length>
+      <hull_radius>3.3</hull_radius>
+      <fluid_level>0.0</fluid_level>
+      <fluid_density>1000.0</fluid_density>
+      <points>
+        <point>35.0 -5.0 -1.5</point>
+        <point>-35.0 -5.0 -1.5</point>
+      </points>
+      <wavefield>
+        <topic>/gazebo/wavefield/parameters</topic>
+      </wavefield>
+    </plugin>
+    <plugin filename="gz-sim-hydrodynamics-system" name="gz::sim::systems::Hydrodynamics">
+      <link_name>ship_link</link_name>
+      <xU>-250000.0</xU>
+      <xAbsU>-100000.0</xAbsU>
+      <yV>-700000.0</yV>
+      <yAbsV>-200000.0</yAbsV>
+      <zW>-1500000.0</zW>
+      <kP>-30000000.0</kP>
+      <mQ>-500000000.0</mQ>
+      <nR>-350000000.0</nR>
+      <nAbsR>-100000000.0</nAbsR>
+    </plugin>
+  </model>
+</sdf>

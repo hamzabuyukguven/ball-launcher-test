@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package target;
+
+service TargetService {
+  rpc SendTarget(TargetRequest) returns (TargetResponse);
+}
+
+message TargetRequest {
+  double x = 1;
+  double y = 2;
+}
+
+message TargetResponse {
+  bool success = 1;
+  string message = 2;
+}
+

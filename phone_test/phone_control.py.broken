@@ -1,0 +1,1127 @@
+#!/usr/bin/env python3
+
+import json
+import math
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+import rclpy
+from geometry_msgs.msg import Twist
+from naval_interfaces.msg import GunRateCommand, TargetInfo
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+
+
+HOST = "0.0.0.0"
+PORT = 8080
+
+MAX_SHIP_SPEED_MPS = 2.0
+MAX_SHIP_YAW_RATE_RAD_S = 0.30
+
+sequence_lock = threading.Lock()
+sequence_number = 0
+
+
+HTML_PAGE = r"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0,
+                 maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Heybeliada Control Panel</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            background: #0f1720;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 540px;
+            margin: auto;
+        }
+
+        h1 {
+            margin: 8px 0 18px;
+            text-align: center;
+            font-size: 25px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        .card {
+            margin-bottom: 16px;
+            padding: 17px;
+            background: #1e2b36;
+            border-radius: 14px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #657483;
+            border-radius: 9px;
+            background: #ffffff;
+            color: #000000;
+            font-size: 18px;
+        }
+
+        button {
+            min-height: 52px;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: bold;
+            touch-action: none;
+            cursor: pointer;
+        }
+
+        .movement-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 9px;
+        }
+
+        .movement-button {
+            background: #2475c7;
+            color: white;
+        }
+
+        .ship-button {
+            background: #126f88;
+            color: white;
+        }
+
+        .stop-button {
+            background: #e0a800;
+            color: #111111;
+        }
+
+        .emergency-button {
+            width: 100%;
+            margin-top: 12px;
+            background: #c62828;
+            color: white;
+        }
+
+        .empty {
+            visibility: hidden;
+        }
+
+        .target-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 9px;
+        }
+
+        .target-buttons button {
+            background: #455767;
+            color: white;
+        }
+
+        .send-target {
+            width: 100%;
+            margin-top: 16px;
+            background: #16856d;
+            color: white;
+        }
+
+        .fire {
+            width: 100%;
+            margin-top: 14px;
+            min-height: 65px;
+            background: #d83434;
+            color: white;
+            font-size: 22px;
+        }
+
+        .status {
+            min-height: 54px;
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 9px;
+            background: #0b1117;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .note {
+            color: #c3ced8;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .warning {
+            padding: 10px;
+            border-left: 4px solid #e0a800;
+            background: #28333d;
+            color: #e8edf2;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Heybeliada Control Panel</h1>
+
+    <div class="card">
+        <h2>Ship Movement</h2>
+
+        <label for="shipSpeed">Forward / Reverse Speed (m/s)</label>
+        <input
+            id="shipSpeed"
+            type="text"
+            inputmode="decimal"
+            value="1.0"
+        >
+
+        <label for="shipTurnRate">Turn Rate (rad/s)</label>
+        <input
+            id="shipTurnRate"
+            type="text"
+            inputmode="decimal"
+            value="0.15"
+        >
+
+        <p class="note">
+            Hold a movement button to move the ship.
+            Releasing the button sends a stop command automatically.
+        </p>
+
+        <div class="movement-grid">
+            <button class="empty">Empty</button>
+
+            <button
+                class="ship-button"
+                onpointerdown="startShipMovement('forward', event)"
+            >
+                FORWARD
+            </button>
+
+            <button class="empty">Empty</button>
+
+            <button
+                class="ship-button"
+                onpointerdown="startShipMovement('turn_left', event)"
+            >
+                TURN LEFT
+            </button>
+
+            <button
+                class="stop-button"
+                onclick="stopShipMovement()"
+            >
+                SHIP STOP
+            </button>
+
+            <button
+                class="ship-button"
+                onpointerdown="startShipMovement('turn_right', event)"
+            >
+                TURN RIGHT
+            </button>
+
+            <button class="empty">Empty</button>
+
+            <button
+                class="ship-button"
+                onpointerdown="startShipMovement('backward', event)"
+            >
+                REVERSE
+            </button>
+
+            <button class="empty">Empty</button>
+        </div>
+
+        <button
+            class="emergency-button"
+            onclick="emergencyStopShip()"
+        >
+            EMERGENCY SHIP STOP
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Gun Motor Speeds</h2>
+
+        <label for="panRpm">Pan Motor Speed (RPM)</label>
+        <input
+            id="panRpm"
+            type="text"
+            inputmode="decimal"
+            value="5"
+        >
+
+        <label for="tiltRpm">Tilt Motor Speed (RPM)</label>
+        <input
+            id="tiltRpm"
+            type="text"
+            inputmode="decimal"
+            value="3"
+        >
+
+        <p class="note">
+            Hold a direction button to move the gun.
+            Release the button to stop.
+        </p>
+
+        <div class="movement-grid">
+            <button class="empty">Empty</button>
+
+            <button
+                class="movement-button"
+                onpointerdown="startGunMovement('up', event)"
+            >
+                UP
+            </button>
+
+            <button class="empty">Empty</button>
+
+            <button
+                class="movement-button"
+                onpointerdown="startGunMovement('left', event)"
+            >
+                LEFT
+            </button>
+
+            <button
+                class="stop-button"
+                onclick="stopGunMovement()"
+            >
+                GUN STOP
+            </button>
+
+            <button
+                class="movement-button"
+                onpointerdown="startGunMovement('right', event)"
+            >
+                RIGHT
+            </button>
+
+            <button class="empty">Empty</button>
+
+            <button
+                class="movement-button"
+                onpointerdown="startGunMovement('down', event)"
+            >
+                DOWN
+            </button>
+
+            <button class="empty">Empty</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Target Information</h2>
+
+        <label for="targetX">Target X (metres)</label>
+        <input
+            id="targetX"
+            type="text"
+            inputmode="decimal"
+            value="20"
+        >
+
+        <label for="targetY">Target Y (metres)</label>
+        <input
+            id="targetY"
+            type="text"
+            inputmode="text"
+            value="-10"
+        >
+
+        <div class="target-buttons">
+            <button onclick="makeYNegative()">Make -Y</button>
+            <button onclick="setYZero()">Set Y = 0</button>
+            <button onclick="makeYPositive()">Make +Y</button>
+        </div>
+
+        <button
+            class="send-target"
+            onclick="sendTarget()"
+        >
+            SEND TARGET DATA
+        </button>
+
+        <p class="warning">
+            Target X and Y are published to /backend/target_info.
+            They do not automatically rotate the gun yet because a
+            TargetInfo-to-GunRate controller is not currently running.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Fire Control</h2>
+
+        <button
+            class="fire"
+            onclick="fireGun()"
+        >
+            FIRE
+        </button>
+
+        <div id="status" class="status">
+            Phone control panel is ready.
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const statusBox = document.getElementById("status");
+
+    let gunMovementActive = false;
+
+    let shipMovementActive = false;
+    let shipMovementDirection = "";
+    let shipRepeatTimer = null;
+    let shipRequestInFlight = false;
+
+
+    function parseNumberFromInput(elementId) {
+        const rawValue = document
+            .getElementById(elementId)
+            .value
+            .trim()
+            .replace(",", ".");
+
+        const value = Number(rawValue);
+
+        if (!Number.isFinite(value)) {
+            throw new Error(
+                "Invalid number in " + elementId
+            );
+        }
+
+        return value;
+    }
+
+
+    async function postJson(path, payload, showSending = true) {
+        if (showSending) {
+            statusBox.textContent = "Sending command...";
+        }
+
+        const response = await fetch(path, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Command failed."
+            );
+        }
+
+        if (showSending) {
+            statusBox.textContent = result.message;
+        }
+
+        return result;
+    }
+
+
+    async function startGunMovement(direction, event) {
+        event.preventDefault();
+
+        try {
+            gunMovementActive = true;
+
+            await postJson("/move", {
+                direction: direction,
+                pan_rpm: parseNumberFromInput("panRpm"),
+                tilt_rpm: parseNumberFromInput("tiltRpm")
+            });
+        } catch (error) {
+            gunMovementActive = false;
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    async function stopGunMovement() {
+        if (!gunMovementActive) {
+            return;
+        }
+
+        try {
+            gunMovementActive = false;
+            await postJson("/stop", {});
+        } catch (error) {
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    function buildShipPayload(direction) {
+        return {
+            direction: direction,
+            speed_mps: Math.abs(
+                parseNumberFromInput("shipSpeed")
+            ),
+            yaw_rate_rad_s: Math.abs(
+                parseNumberFromInput("shipTurnRate")
+            )
+        };
+    }
+
+
+    async function sendShipMovement(showStatus) {
+        if (
+            !shipMovementActive
+            || shipRequestInFlight
+        ) {
+            return;
+        }
+
+        shipRequestInFlight = true;
+
+        try {
+            const result = await postJson(
+                "/ship/move",
+                buildShipPayload(
+                    shipMovementDirection
+                ),
+                showStatus
+            );
+
+            if (showStatus) {
+                statusBox.textContent = result.message;
+            }
+        } catch (error) {
+            shipMovementActive = false;
+            clearInterval(shipRepeatTimer);
+            shipRepeatTimer = null;
+            statusBox.textContent = "ERROR: " + error.message;
+        } finally {
+            shipRequestInFlight = false;
+        }
+    }
+
+
+    async function startShipMovement(direction, event) {
+        event.preventDefault();
+
+        await stopShipMovement(false);
+
+        shipMovementDirection = direction;
+        shipMovementActive = true;
+
+        await sendShipMovement(true);
+
+        shipRepeatTimer = setInterval(
+            () => sendShipMovement(false),
+            200
+        );
+    }
+
+
+    async function stopShipMovement(showStatus = true) {
+        clearInterval(shipRepeatTimer);
+        shipRepeatTimer = null;
+
+        const wasActive = shipMovementActive;
+        shipMovementActive = false;
+        shipMovementDirection = "";
+
+        if (!wasActive && !showStatus) {
+            return;
+        }
+
+        try {
+            await postJson(
+                "/ship/stop",
+                {},
+                showStatus
+            );
+        } catch (error) {
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    async function emergencyStopShip() {
+        clearInterval(shipRepeatTimer);
+        shipRepeatTimer = null;
+        shipMovementActive = false;
+        shipMovementDirection = "";
+
+        try {
+            await postJson("/ship/stop", {});
+        } catch (error) {
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    async function sendTarget() {
+        try {
+            await postJson("/target", {
+                x: parseNumberFromInput("targetX"),
+                y: parseNumberFromInput("targetY")
+            });
+        } catch (error) {
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    async function fireGun() {
+        try {
+            await postJson("/fire", {});
+        } catch (error) {
+            statusBox.textContent = "ERROR: " + error.message;
+        }
+    }
+
+
+    function makeYNegative() {
+        const input = document.getElementById("targetY");
+        const value = Math.abs(
+            Number(input.value.replace(",", ".")) || 0
+        );
+
+        input.value = String(-value);
+    }
+
+
+    function setYZero() {
+        document.getElementById("targetY").value = "0";
+    }
+
+
+    function makeYPositive() {
+        const input = document.getElementById("targetY");
+        const value = Math.abs(
+            Number(input.value.replace(",", ".")) || 0
+        );
+
+        input.value = String(value);
+    }
+
+
+    window.addEventListener("pointerup", () => {
+        if (gunMovementActive) {
+            stopGunMovement();
+        }
+
+        if (shipMovementActive) {
+            stopShipMovement();
+        }
+    });
+
+
+    window.addEventListener("pointercancel", () => {
+        if (gunMovementActive) {
+            stopGunMovement();
+        }
+
+        if (shipMovementActive) {
+            stopShipMovement();
+        }
+    });
+
+
+    window.addEventListener("blur", () => {
+        if (gunMovementActive) {
+            stopGunMovement();
+        }
+
+        if (shipMovementActive) {
+            stopShipMovement();
+        }
+    });
+
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            if (gunMovementActive) {
+                stopGunMovement();
+            }
+
+            if (shipMovementActive) {
+                stopShipMovement();
+            }
+        }
+    });
+
+
+    window.addEventListener("beforeunload", () => {
+        if (shipMovementActive) {
+            navigator.sendBeacon(
+                "/ship/stop",
+                new Blob(
+                    ["{}"],
+                    {type: "application/json"}
+                )
+            );
+        }
+    });
+</script>
+</body>
+</html>
+"""
+
+
+def next_sequence():
+    global sequence_number
+
+    with sequence_lock:
+        sequence_number += 1
+        return sequence_number
+
+
+def rpm_to_rad_s(rpm):
+    return rpm * 2.0 * math.pi / 60.0
+
+
+class PhoneRosNode(Node):
+
+    def __init__(self):
+        super().__init__("phone_control_node")
+
+        self.command_lock = threading.Lock()
+
+        self.gun_rate_publisher = self.create_publisher(
+            GunRateCommand,
+            "/backend/gun_rate_command",
+            10,
+        )
+
+        self.target_publisher = self.create_publisher(
+            TargetInfo,
+            "/backend/target_info",
+            10,
+        )
+
+        self.platform_velocity_publisher = self.create_publisher(
+            Twist,
+            "/backend/platform_cmd_vel",
+            10,
+        )
+
+        self.get_logger().info(
+            "Phone ROS publishers are ready."
+        )
+
+    def publish_gun_rate(
+        self,
+        pan_rpm,
+        tilt_rpm,
+        fire=False,
+        control_enabled=True,
+    ):
+        sequence = next_sequence()
+
+        pan_rate_rad_s = rpm_to_rad_s(pan_rpm)
+        tilt_rate_rad_s = rpm_to_rad_s(tilt_rpm)
+
+        message = GunRateCommand()
+        message.header.stamp = self.get_clock().now().to_msg()
+        message.sequence = sequence
+        message.pan_rate_rad_s = pan_rate_rad_s
+        message.tilt_rate_rad_s = tilt_rate_rad_s
+        message.control_enabled = control_enabled
+        message.fire = fire
+
+        with self.command_lock:
+            self.gun_rate_publisher.publish(message)
+
+        return pan_rate_rad_s, tilt_rate_rad_s
+
+    def publish_target(self, x, y):
+        message = TargetInfo()
+        message.header.stamp = self.get_clock().now().to_msg()
+        message.target_id = "phone_target"
+        message.position_x_m = x
+        message.position_y_m = y
+        message.has_position_z = False
+        message.position_z_m = 0.0
+        message.confidence = 1.0
+        message.valid = True
+
+        with self.command_lock:
+            self.target_publisher.publish(message)
+
+    def publish_platform_velocity(
+        self,
+        forward_speed,
+        yaw_rate,
+    ):
+        message = Twist()
+        message.linear.x = float(forward_speed)
+        message.linear.y = 0.0
+        message.linear.z = 0.0
+        message.angular.x = 0.0
+        message.angular.y = 0.0
+        message.angular.z = float(yaw_rate)
+
+        with self.command_lock:
+            self.platform_velocity_publisher.publish(message)
+
+
+ROS_NODE = None
+
+
+class PhoneControlHandler(BaseHTTPRequestHandler):
+
+    def send_json(self, status_code, payload):
+        body = json.dumps(
+            payload,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+        self.send_response(status_code)
+        self.send_header(
+            "Content-Type",
+            "application/json; charset=utf-8"
+        )
+        self.send_header(
+            "Content-Length",
+            str(len(body))
+        )
+        self.end_headers()
+
+        self.wfile.write(body)
+
+    def do_GET(self):
+        if self.path != "/":
+            self.send_error(404)
+            return
+
+        page = HTML_PAGE.encode("utf-8")
+
+        self.send_response(200)
+        self.send_header(
+            "Content-Type",
+            "text/html; charset=utf-8"
+        )
+        self.send_header(
+            "Content-Length",
+            str(len(page))
+        )
+        self.end_headers()
+
+        self.wfile.write(page)
+
+    def do_POST(self):
+        try:
+            content_length = int(
+                self.headers.get("Content-Length", "0")
+            )
+
+            raw_body = self.rfile.read(content_length)
+
+            if raw_body:
+                data = json.loads(
+                    raw_body.decode("utf-8")
+                )
+            else:
+                data = {}
+
+            if self.path == "/move":
+                self.handle_move(data)
+                return
+
+            if self.path == "/stop":
+                self.handle_stop()
+                return
+
+            if self.path == "/ship/move":
+                self.handle_ship_move(data)
+                return
+
+            if self.path == "/ship/stop":
+                self.handle_ship_stop()
+                return
+
+            if self.path == "/target":
+                self.handle_target(data)
+                return
+
+            if self.path == "/fire":
+                self.handle_fire()
+                return
+
+            self.send_json(404, {
+                "message": "Unknown command."
+            })
+
+        except Exception as error:
+            self.send_json(500, {
+                "message": str(error)
+            })
+
+    def handle_move(self, data):
+        direction = str(
+            data.get("direction", "")
+        ).lower()
+
+        pan_speed = abs(
+            float(data.get("pan_rpm", 0.0))
+        )
+
+        tilt_speed = abs(
+            float(data.get("tilt_rpm", 0.0))
+        )
+
+        pan_rpm = 0.0
+        tilt_rpm = 0.0
+
+        if direction == "left":
+            pan_rpm = -pan_speed
+
+        elif direction == "right":
+            pan_rpm = pan_speed
+
+        elif direction == "up":
+            tilt_rpm = tilt_speed
+
+        elif direction == "down":
+            tilt_rpm = -tilt_speed
+
+        else:
+            raise ValueError(
+                "Invalid gun movement direction."
+            )
+
+        pan_rad_s, tilt_rad_s = ROS_NODE.publish_gun_rate(
+            pan_rpm=pan_rpm,
+            tilt_rpm=tilt_rpm,
+            fire=False,
+            control_enabled=True,
+        )
+
+        self.send_json(200, {
+            "message": (
+                f"Gun moving {direction.upper()}\n"
+                f"Pan rate: {pan_rad_s:.4f} rad/s\n"
+                f"Tilt rate: {tilt_rad_s:.4f} rad/s"
+            )
+        })
+
+    def handle_stop(self):
+        ROS_NODE.publish_gun_rate(
+            pan_rpm=0.0,
+            tilt_rpm=0.0,
+            fire=False,
+            control_enabled=True,
+        )
+
+        self.send_json(200, {
+            "message": "Gun movement stopped."
+        })
+
+    def handle_ship_move(self, data):
+        direction = str(
+            data.get("direction", "")
+        ).lower()
+
+        speed = abs(
+            float(data.get("speed_mps", 0.0))
+        )
+
+        yaw_rate = abs(
+            float(data.get("yaw_rate_rad_s", 0.0))
+        )
+
+        if (
+            not math.isfinite(speed)
+            or not math.isfinite(yaw_rate)
+        ):
+            raise ValueError(
+                "Ship speed values must be finite."
+            )
+
+        speed = min(speed, MAX_SHIP_SPEED_MPS)
+        yaw_rate = min(
+            yaw_rate,
+            MAX_SHIP_YAW_RATE_RAD_S,
+        )
+
+        forward_speed = 0.0
+        command_yaw_rate = 0.0
+
+        if direction == "forward":
+            forward_speed = speed
+
+        elif direction == "backward":
+            forward_speed = -speed
+
+        elif direction == "turn_left":
+            command_yaw_rate = yaw_rate
+
+        elif direction == "turn_right":
+            command_yaw_rate = -yaw_rate
+
+        else:
+            raise ValueError(
+                "Invalid ship movement direction."
+            )
+
+        ROS_NODE.publish_platform_velocity(
+            forward_speed=forward_speed,
+            yaw_rate=command_yaw_rate,
+        )
+
+        self.send_json(200, {
+            "message": (
+                f"Ship command: {direction.upper()}\n"
+                f"Forward speed: {forward_speed:.2f} m/s\n"
+                f"Yaw rate: {command_yaw_rate:.3f} rad/s"
+            )
+        })
+
+    def handle_ship_stop(self):
+        ROS_NODE.publish_platform_velocity(
+            forward_speed=0.0,
+            yaw_rate=0.0,
+        )
+
+        self.send_json(200, {
+            "message": "Ship stopped."
+        })
+
+    def handle_target(self, data):
+        x = float(data["x"])
+        y = float(data["y"])
+
+        if not math.isfinite(x) or not math.isfinite(y):
+            raise ValueError(
+                "Target coordinates must be finite numbers."
+            )
+
+        ROS_NODE.publish_target(x, y)
+
+        self.send_json(200, {
+            "message": (
+                "Target data sent successfully.\n"
+                f"X: {x:.2f} m\n"
+                f"Y: {y:.2f} m"
+            )
+        })
+
+    def handle_fire(self):
+        ROS_NODE.publish_gun_rate(
+            pan_rpm=0.0,
+            tilt_rpm=0.0,
+            fire=True,
+            control_enabled=True,
+        )
+
+        self.send_json(200, {
+            "message": "Fire command sent successfully."
+        })
+
+    def log_message(self, format_string, *args):
+        print(
+            f"{self.client_address[0]} - "
+            f"{format_string % args}"
+        )
+
+
+def stop_all_motion():
+    if ROS_NODE is None:
+        return
+
+    try:
+        ROS_NODE.publish_platform_velocity(
+            forward_speed=0.0,
+            yaw_rate=0.0,
+        )
+
+        ROS_NODE.publish_gun_rate(
+            pan_rpm=0.0,
+            tilt_rpm=0.0,
+            fire=False,
+            control_enabled=True,
+        )
+
+    except Exception as error:
+        print(f"Stop command error: {error}")
+
+
+def main():
+    global ROS_NODE
+
+    rclpy.init()
+
+    ROS_NODE = PhoneRosNode()
+
+    executor = MultiThreadedExecutor(
+        num_threads=2
+    )
+    executor.add_node(ROS_NODE)
+
+    executor_thread = threading.Thread(
+        target=executor.spin,
+        daemon=True,
+    )
+    executor_thread.start()
+
+    server = ThreadingHTTPServer(
+        (HOST, PORT),
+        PhoneControlHandler,
+    )
+
+    print("=" * 62)
+    print("Heybeliada phone control server is running")
+    print(f"Address: http://0.0.0.0:{PORT}")
+    print("Ship topic: /backend/platform_cmd_vel")
+    print("Gun topic: /backend/gun_rate_command")
+    print("Press Ctrl+C to stop")
+    print("=" * 62)
+
+    try:
+        server.serve_forever()
+
+    except KeyboardInterrupt:
+        print("\nServer is shutting down...")
+
+    finally:
+        stop_all_motion()
+        server.server_close()
+        executor.shutdown()
+        ROS_NODE.destroy_node()
+
+        if rclpy.ok():
+            rclpy.shutdown()
+
+        executor_thread.join(timeout=2.0)
+
+
+if __name__ == "__main__":
+    main()

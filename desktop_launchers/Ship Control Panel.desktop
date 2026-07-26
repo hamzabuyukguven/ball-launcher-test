@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ship Control Panel
+Comment=Open the independent ship movement controller
+Exec=/home/fatih/open_ship_control_app.sh
+Terminal=false
+Icon=input-gaming
+Categories=Utility;Development;
+StartupNotify=true

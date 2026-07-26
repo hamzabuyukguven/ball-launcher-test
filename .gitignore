@@ -1,0 +1,51 @@
+# ROS 2 generated directories
+**/build/
+**/install/
+**/log/
+
+# Runtime files
+**/logs/
+**/*.log
+**/*.pid
+**/.run/
+ship_control_panel/run/
+ship_control_panel/backups/
+
+# Java / Maven / Gradle generated files
+**/target/
+**/out/
+**/.gradle/
+**/*.class
+
+# Python generated files
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.venv/
+**/venv/
+
+# JavaScript generated files
+**/node_modules/
+
+# IDE files
+**/.idea/
+**/.vscode/
+**/*.iml
+
+# Environment and secret files
+.env
+.env.*
+!.env.example
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+**/*~
+**/*.swp
+**/*.tmp
+**/*.bak
+**/*backup_before*
+**/*.backup_*
+**/*.backup

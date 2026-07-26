@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="ball_launcher">
+    <canonical_link>base_link</canonical_link>
+    <self_collide>false</self_collide>
+
+    <!-- The base bottom is exactly at z=0. -->
+    <link name="base_link">
+      <pose>0 0 0.20 0 0 0</pose>
+      <inertial>
+        <mass>20.0</mass>
+        <inertia>
+          <ixx>0.40</ixx><iyy>0.40</iyy><izz>0.40</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="base_visual">
+        <geometry><cylinder><radius>0.35</radius><length>0.40</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.18 1</ambient><diffuse>0.20 0.20 0.24 1</diffuse></material>
+      </visual>
+      <collision name="base_collision">
+        <geometry><cylinder><radius>0.35</radius><length>0.40</length></cylinder></geometry>
+      </collision>
+    </link>
+
+    <joint name="world_fixed" type="fixed">
+      <parent>world</parent>
+      <child>base_link</child>
+    </joint>
+
+    <!-- Main pan block sits on the base. A tower fills the old vertical gap. -->
+    <link name="pan_link">
+      <pose>0 0 0.51 0 0 0</pose>
+      <inertial>
+        <mass>5.0</mass>
+        <inertia>
+          <ixx>0.18</ixx><iyy>0.18</iyy><izz>0.14</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="pan_body_visual">
+        <geometry><box><size>0.48 0.62 0.22</size></box></geometry>
+        <material><ambient>0.05 0.25 0.55 1</ambient><diffuse>0.08 0.35 0.75 1</diffuse></material>
+      </visual>
+      <collision name="pan_body_collision">
+        <geometry><box><size>0.48 0.62 0.22</size></box></geometry>
+      </collision>
+
+      <!-- U-shaped side supports: bottom z=0.62, top z=1.05. Their inner
+           faces touch the tilt body sides at y=+/-0.21 even while it tilts. -->
+      <visual name="left_support_visual">
+        <pose>0 0.26 0.325 0 0 0</pose>
+        <geometry><box><size>0.14 0.10 0.43</size></box></geometry>
+        <material><ambient>0.05 0.25 0.55 1</ambient><diffuse>0.08 0.35 0.75 1</diffuse></material>
+      </visual>
+      <collision name="left_support_collision">
+        <pose>0 0.26 0.325 0 0 0</pose>
+        <geometry><box><size>0.14 0.10 0.43</size></box></geometry>
+      </collision>
+
+      <visual name="right_support_visual">
+        <pose>0 -0.26 0.325 0 0 0</pose>
+        <geometry><box><size>0.14 0.10 0.43</size></box></geometry>
+        <material><ambient>0.05 0.25 0.55 1</ambient><diffuse>0.08 0.35 0.75 1</diffuse></material>
+      </visual>
+      <collision name="right_support_collision">
+        <pose>0 -0.26 0.325 0 0 0</pose>
+        <geometry><box><size>0.14 0.10 0.43</size></box></geometry>
+      </collision>
+    </link>
+
+    <joint name="pan_joint" type="revolute">
+      <pose relative_to="base_link">0 0 0.20 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>pan_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit><lower>-3.14159</lower><upper>3.14159</upper><effort>200</effort><velocity>3.0</velocity></limit>
+        <dynamics><damping>1.5</damping><friction>0.2</friction></dynamics>
+      </axis>
+    </joint>
+
+    <!-- The tilt body is held between the two side supports at the hinge axis. -->
+    <link name="tilt_link">
+      <pose>0 0 1.05 0 0 0</pose>
+      <inertial>
+        <mass>3.0</mass>
+        <inertia>
+          <ixx>0.30</ixx><iyy>0.30</iyy><izz>0.08</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="tilt_body_visual">
+        <geometry><box><size>0.30 0.42 0.24</size></box></geometry>
+        <material><ambient>0.55 0.18 0.05 1</ambient><diffuse>0.75 0.25 0.08 1</diffuse></material>
+      </visual>
+      <collision name="tilt_body_collision">
+        <geometry><box><size>0.30 0.42 0.24</size></box></geometry>
+      </collision>
+
+      <visual name="barrel_visual">
+        <pose>0.425 0 0 0 1.57079632679 0</pose>
+        <geometry><cylinder><radius>0.095</radius><length>0.85</length></cylinder></geometry>
+        <material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+      </visual>
+      <collision name="barrel_collision">
+        <pose>0.425 0 0 0 1.57079632679 0</pose>
+        <geometry><cylinder><radius>0.095</radius><length>0.85</length></cylinder></geometry>
+      </collision>
+    </link>
+
+    <joint name="tilt_joint" type="revolute">
+      <parent>pan_link</parent>
+      <child>tilt_link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit><lower>-0.10</lower><upper>1.31</upper><effort>180</effort><velocity>2.5</velocity></limit>
+        <dynamics><damping>1.2</damping><friction>0.15</friction></dynamics>
+      </axis>
+    </joint>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>pan_joint</joint_name>
+      <topic>/pan_cmd</topic>
+      <p_gain>65.0</p_gain>
+      <i_gain>0.2</i_gain>
+      <d_gain>8.0</d_gain>
+      <cmd_max>3.14159</cmd_max>
+      <cmd_min>-3.14159</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>tilt_joint</joint_name>
+      <topic>/tilt_cmd</topic>
+      <p_gain>70.0</p_gain>
+      <i_gain>0.2</i_gain>
+      <d_gain>9.0</d_gain>
+      <cmd_max>1.31</cmd_max>
+      <cmd_min>-0.10</cmd_min>
+    </plugin>
+  </model>
+</sdf>

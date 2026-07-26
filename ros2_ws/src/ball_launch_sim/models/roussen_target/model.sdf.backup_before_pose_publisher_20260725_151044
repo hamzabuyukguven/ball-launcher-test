@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="roussen_target">
+    <!-- Stationary target. Remove static=true only after adding proper mass and hydrodynamics. -->
+    <static>true</static>
+
+    <link name="base_link">
+      <!-- Export script places the waterline at mesh Z=0. -->
+      <visual name="ship_visual">
+        <geometry>
+          <mesh>
+            <uri>model://roussen_target/meshes/roussen.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- Simple collisions are intentionally used instead of the detailed render mesh. -->
+      <collision name="main_hull_collision">
+        <pose>-1 0 -1.25 0 0 0</pose>
+        <geometry>
+          <box><size>50 8.6 3.2</size></box>
+        </geometry>
+      </collision>
+
+      <collision name="bow_collision">
+        <pose>25 0 -1.0 0 0 0</pose>
+        <geometry>
+          <box><size>10 5.6 2.6</size></box>
+        </geometry>
+      </collision>
+
+      <collision name="superstructure_collision">
+        <pose>-3 0 2.4 0 0 0</pose>
+        <geometry>
+          <box><size>20 7.0 4.8</size></box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

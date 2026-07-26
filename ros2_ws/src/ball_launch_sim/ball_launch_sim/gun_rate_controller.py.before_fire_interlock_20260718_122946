@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+
+import math
+import time
+
+import rclpy
+from naval_interfaces.msg import GunRateCommand
+from rclpy.node import Node
+from std_msgs.msg import Bool, Float64
+
+
+class GunRateController(Node):
+    """
+    Converts backend pan and tilt angular-rate commands into position targets.
+
+    Input:
+        /backend/gun_rate_command
+            pan_rate_rad_s
+            tilt_rate_rad_s
+            control_enabled
+            fire
+
+    Outputs:
+        /pan_cmd
+        /tilt_cmd
+        /heybeliada/pan_cmd
+        /heybeliada/tilt_cmd
+        /simulation/fire_request
+    """
+
+    PAN_MIN_RAD = -2.617994
+    PAN_MAX_RAD = 2.617994
+
+    TILT_MIN_RAD = -0.0872665
+    TILT_MAX_RAD = 1.2217305
+
+    DEFAULT_MAX_PAN_RATE_RAD_S = 0.35
+    DEFAULT_MAX_TILT_RATE_RAD_S = 0.20
+
+    def __init__(self) -> None:
+        super().__init__('gun_rate_controller')
+
+        # Parameters can be changed later from launch files.
+        self.declare_parameter(
+            'max_pan_rate_rad_s',
+            self.DEFAULT_MAX_PAN_RATE_RAD_S,
+        )
+        self.declare_parameter(
+            'max_tilt_rate_rad_s',
+            self.DEFAULT_MAX_TILT_RATE_RAD_S,
+        )
+        self.declare_parameter('watchdog_timeout_sec', 0.5)
+        self.declare_parameter('control_period_sec', 0.02)
+        self.declare_parameter('initial_pan_rad', 0.0)
+        self.declare_parameter('initial_tilt_rad', 0.0)
+
+        self.max_pan_rate = float(
+            self.get_parameter('max_pan_rate_rad_s').value
+        )
+        self.max_tilt_rate = float(
+            self.get_parameter('max_tilt_rate_rad_s').value
+        )
+        self.watchdog_timeout = float(
+            self.get_parameter('watchdog_timeout_sec').value
+        )
+        self.control_period = float(
+            self.get_parameter('control_period_sec').value
+        )
+
+        self.current_pan = self._clamp(
+            float(self.get_parameter('initial_pan_rad').value),
+            self.PAN_MIN_RAD,
+            self.PAN_MAX_RAD,
+        )
+        self.current_tilt = self._clamp(
+            float(self.get_parameter('initial_tilt_rad').value),
+            self.TILT_MIN_RAD,
+            self.TILT_MAX_RAD,
+        )
+
+        self.commanded_pan_rate = 0.0
+        self.commanded_tilt_rate = 0.0
+
+        self.applied_pan_rate = 0.0
+        self.applied_tilt_rate = 0.0
+
+        self.control_enabled = False
+        self.previous_fire = False
+
+        self.last_command_time = None
+        self.last_update_time = time.monotonic()
+        self.watchdog_active = False
+
+        # Backend command input.
+        self.command_subscription = self.create_subscription(
+            GunRateCommand,
+            '/backend/gun_rate_command',
+            self.command_callback,
+            10,
+        )
+
+        # Legacy ROS topics used by ball_spawner.
+        self.pan_publisher = self.create_publisher(
+            Float64,
+            '/pan_cmd',
+            10,
+        )
+        self.tilt_publisher = self.create_publisher(
+            Float64,
+            '/tilt_cmd',
+            10,
+        )
+
+        # Heybeliada Gazebo model topics.
+        self.ship_pan_publisher = self.create_publisher(
+            Float64,
+            '/heybeliada/pan_cmd',
+            10,
+        )
+        self.ship_tilt_publisher = self.create_publisher(
+            Float64,
+            '/heybeliada/tilt_cmd',
+            10,
+        )
+
+        # A one-message fire request event.
+        self.fire_request_publisher = self.create_publisher(
+            Bool,
+            '/simulation/fire_request',
+            10,
+        )
+
+        self.control_timer = self.create_timer(
+            self.control_period,
+            self.control_loop,
+        )
+
+        self.get_logger().info(
+            'Gun rate controller started.'
+        )
+        self.get_logger().info(
+            'Input topic: /backend/gun_rate_command'
+        )
+        self.get_logger().info(
+            'Pan rate range: %.2f to %.2f rad/s'
+            % (-self.max_pan_rate, self.max_pan_rate)
+        )
+        self.get_logger().info(
+            'Tilt rate range: %.2f to %.2f rad/s'
+            % (-self.max_tilt_rate, self.max_tilt_rate)
+        )
+        self.get_logger().info(
+            'Watchdog timeout: %.2f seconds'
+            % self.watchdog_timeout
+        )
+
+    @staticmethod
+    def _clamp(value: float, minimum: float, maximum: float) -> float:
+        return max(minimum, min(maximum, value))
+
+    def command_callback(self, message: GunRateCommand) -> None:
+        now = time.monotonic()
+
+        if not math.isfinite(message.pan_rate_rad_s):
+            self.get_logger().error(
+                'Rejected command: pan rate is not finite.'
+            )
+            return
+
+        if not math.isfinite(message.tilt_rate_rad_s):
+            self.get_logger().error(
+                'Rejected command: tilt rate is not finite.'
+            )
+            return
+
+        self.last_command_time = now
+        self.watchdog_active = False
+
+        self.control_enabled = bool(message.control_enabled)
+
+        if self.control_enabled:
+            self.commanded_pan_rate = self._clamp(
+                float(message.pan_rate_rad_s),
+                -self.max_pan_rate,
+                self.max_pan_rate,
+            )
+
+            self.commanded_tilt_rate = self._clamp(
+                float(message.tilt_rate_rad_s),
+                -self.max_tilt_rate,
+                self.max_tilt_rate,
+            )
+        else:
+            self.commanded_pan_rate = 0.0
+            self.commanded_tilt_rate = 0.0
+
+        # Fire is handled as a rising-edge event.
+        fire_requested = bool(message.fire)
+
+        if (
+            self.control_enabled
+            and fire_requested
+            and not self.previous_fire
+        ):
+            fire_message = Bool()
+            fire_message.data = True
+
+            self.fire_request_publisher.publish(fire_message)
+
+            self.get_logger().info(
+                'Fire request received.'
+            )
+
+        self.previous_fire = (
+            fire_requested if self.control_enabled else False
+        )
+
+    def apply_watchdog(self, now: float) -> None:
+        if self.last_command_time is None:
+            return
+
+        command_age = now - self.last_command_time
+
+        if command_age <= self.watchdog_timeout:
+            return
+
+        self.commanded_pan_rate = 0.0
+        self.commanded_tilt_rate = 0.0
+        self.control_enabled = False
+        self.previous_fire = False
+
+        if not self.watchdog_active:
+            self.get_logger().warning(
+                'Command watchdog timeout. Gun motion stopped.'
+            )
+            self.watchdog_active = True
+
+    def control_loop(self) -> None:
+        now = time.monotonic()
+
+        delta_time = now - self.last_update_time
+        self.last_update_time = now
+
+        # Prevent a large jump after the computer or process pauses.
+        delta_time = self._clamp(
+            delta_time,
+            0.0,
+            0.1,
+        )
+
+        self.apply_watchdog(now)
+
+        previous_pan = self.current_pan
+        previous_tilt = self.current_tilt
+
+        requested_pan = (
+            self.current_pan
+            + self.commanded_pan_rate * delta_time
+        )
+        requested_tilt = (
+            self.current_tilt
+            + self.commanded_tilt_rate * delta_time
+        )
+
+        self.current_pan = self._clamp(
+            requested_pan,
+            self.PAN_MIN_RAD,
+            self.PAN_MAX_RAD,
+        )
+        self.current_tilt = self._clamp(
+            requested_tilt,
+            self.TILT_MIN_RAD,
+            self.TILT_MAX_RAD,
+        )
+
+        if delta_time > 0.0:
+            self.applied_pan_rate = (
+                self.current_pan - previous_pan
+            ) / delta_time
+
+            self.applied_tilt_rate = (
+                self.current_tilt - previous_tilt
+            ) / delta_time
+        else:
+            self.applied_pan_rate = 0.0
+            self.applied_tilt_rate = 0.0
+
+        pan_message = Float64()
+        pan_message.data = self.current_pan
+
+        tilt_message = Float64()
+        tilt_message.data = self.current_tilt
+
+        # Publish for ball_spawner and legacy ROS nodes.
+        self.pan_publisher.publish(pan_message)
+        self.tilt_publisher.publish(tilt_message)
+
+        # Publish for the current Heybeliada model.
+        self.ship_pan_publisher.publish(pan_message)
+        self.ship_tilt_publisher.publish(tilt_message)
+
+
+def main(args=None) -> None:
+    rclpy.init(args=args)
+
+    node = GunRateController()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

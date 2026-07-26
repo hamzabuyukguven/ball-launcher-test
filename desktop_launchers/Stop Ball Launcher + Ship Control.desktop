@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stop Ball Launcher + Ship Control
+Comment=Stop Gazebo, backend, frontend, Kafka and Ship Control Panel
+Exec=/home/fatih/stop_ball_launcher_with_ship_panel.sh
+Terminal=false
+Icon=process-stop
+Categories=Development;
+StartupNotify=false

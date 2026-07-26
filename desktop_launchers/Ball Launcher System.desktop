@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ball Launcher System
+Comment=Start simulation, Kafka, backend and frontend
+Exec=/home/fatih/ball_launcher_desktop_launcher.sh system
+Terminal=false
+Icon=utilities-terminal
+Categories=Development;
+StartupNotify=false

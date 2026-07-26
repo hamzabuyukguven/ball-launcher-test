@@ -1,0 +1,11 @@
+module com.hamza.balllauncherfrontend {
+    requires javafx.controls;
+    requires javafx.fxml;
+    requires kafka.clients;
+    requires org.slf4j;
+    requires com.fasterxml.jackson.databind;
+
+    opens com.hamza.balllauncherfrontend to javafx.fxml;
+    opens com.hamza.balllauncherfrontend.kafka to com.fasterxml.jackson.databind;
+    exports com.hamza.balllauncherfrontend;
+}

@@ -1,0 +1,6 @@
+Original asset: "Fast attack missile boat"
+Creator: panko10
+Source: BlendSwap, blend #92857 / current page blend/22241
+License: Creative Commons Attribution 3.0 (CC BY 3.0)
+Conversion: scaled and prepared as a Gazebo target model.
+Keep LICENSE.html and this attribution with redistributed copies or derivatives.

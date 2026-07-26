@@ -1,0 +1,320 @@
+#!/usr/bin/env python3
+
+import os
+from pathlib import Path
+
+from ament_index_python.packages import get_package_prefix
+from launch import LaunchDescription
+from launch.actions import ExecuteProcess
+from launch.actions import SetEnvironmentVariable
+from launch_ros.actions import Node
+
+
+def combine_paths(*paths) -> str:
+    return os.pathsep.join(
+        str(path)
+        for path in paths
+        if path
+    )
+
+
+def generate_launch_description():
+    home = Path.home()
+
+    ball_workspace = (
+        home
+        / 'ball_launcher_ws'
+    )
+
+    ball_package = (
+        ball_workspace
+        / 'src'
+        / 'ball_launch_sim'
+    )
+
+    world_file = (
+        ball_package
+        / 'worlds'
+        / 'heybeliada_sydney_float.sdf'
+    )
+
+    ball_models_directory = (
+        ball_package
+        / 'models'
+    )
+
+    maritime_install = (
+        home
+        / 'sydney_package_tmp'
+        / 'gazebo_maritime_ws'
+        / 'install'
+    )
+
+    maritime_models_directory = (
+        maritime_install
+        / 'share'
+        / 'gazebo_maritime'
+        / 'models'
+    )
+
+    maritime_plugin_directory = (
+        maritime_install
+        / 'lib'
+    )
+
+    projectile_plugin_directory = (
+        Path(
+            get_package_prefix(
+                'projectile_launch_plugin'
+            )
+        )
+        / 'lib'
+    )
+
+    old_resource_path = os.environ.get(
+        'GZ_SIM_RESOURCE_PATH',
+        '',
+    )
+
+    old_plugin_path = os.environ.get(
+        'GZ_SIM_SYSTEM_PLUGIN_PATH',
+        '',
+    )
+
+    old_library_path = os.environ.get(
+        'LD_LIBRARY_PATH',
+        '',
+    )
+
+    resource_path = combine_paths(
+        ball_models_directory,
+        maritime_models_directory,
+        old_resource_path,
+    )
+
+    plugin_path = combine_paths(
+        projectile_plugin_directory,
+        maritime_plugin_directory,
+        old_plugin_path,
+    )
+
+    library_path = combine_paths(
+        projectile_plugin_directory,
+        maritime_plugin_directory,
+        old_library_path,
+    )
+
+    gazebo = ExecuteProcess(
+        cmd=[
+            'gz',
+            'sim',
+            '-v',
+            '4',
+            '-r',
+            str(world_file),
+        ],
+        output='screen',
+    )
+
+    pan_tilt_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='heybeliada_pan_tilt_bridge',
+        arguments=[
+            (
+                '/heybeliada/pan_cmd'
+                '@std_msgs/msg/Float64'
+                '@gz.msgs.Double'
+            ),
+            (
+                '/heybeliada/tilt_cmd'
+                '@std_msgs/msg/Float64'
+                '@gz.msgs.Double'
+            ),
+        ],
+        output='screen',
+    )
+
+    joint_state_topic = (
+        '/world/sydney_regatta'
+        '/model/heybeliada_ship_float_test'
+        '/joint_state'
+    )
+
+    telemetry_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='heybeliada_telemetry_bridge',
+        arguments=[
+            (
+                joint_state_topic
+                + '@sensor_msgs/msg/JointState'
+                + '[gz.msgs.Model'
+            ),
+        ],
+        remappings=[
+            (
+                joint_state_topic,
+                '/joint_states',
+            ),
+        ],
+        output='screen',
+    )
+
+    platform_pose_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='heybeliada_platform_pose_bridge',
+        arguments=[
+            (
+                '/model/heybeliada_ship_float_test/pose'
+                '@tf2_msgs/msg/TFMessage'
+                '[gz.msgs.Pose_V'
+            ),
+        ],
+        remappings=[
+            (
+                '/model/heybeliada_ship_float_test/pose',
+                '/simulation/platform_pose',
+            ),
+        ],
+        output='screen',
+    )
+
+
+    target_pose_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='wamv_target_pose_bridge',
+        arguments=[
+            (
+                '/model/wam_v/pose'
+                '@geometry_msgs/msg/PoseArray'
+                '[gz.msgs.Pose_V'
+            ),
+        ],
+        remappings=[
+            (
+                '/model/wam_v/pose',
+                '/simulation/target_pose',
+            ),
+        ],
+        output='screen',
+    )
+
+    telemetry_node = Node(
+        package='grpc_ros_bridge',
+        executable='simulation_telemetry_node',
+        name='simulation_telemetry_node',
+        parameters=[
+            {
+                'platform_id':
+                    'heybeliada_ship',
+
+                'platform_model_name':
+                    'heybeliada_ship_float_test',
+
+                'target_id':
+                    'wam_v_target',
+
+                'target_model_match':
+                    'wam_v',
+
+                'platform_x_m':
+                    -276.0,
+
+                'platform_y_m':
+                    220.0,
+
+                'platform_z_m':
+                    2.0,
+
+                'platform_yaw_rad':
+                    3.094,
+            },
+        ],
+        output='screen',
+    )
+
+    gun_rate_controller = Node(
+        package='ball_launch_sim',
+        executable='gun_rate_controller',
+        name='gun_rate_controller',
+        output='screen',
+    )
+
+    ball_spawner = Node(
+        package='ball_launch_sim',
+        executable='ball_spawner',
+        name='ball_spawner',
+        parameters=[
+            {
+                'world_name':
+                    'sydney_regatta',
+
+                'reference_model':
+                    'heybeliada_ship_float_test',
+
+                'reference_link':
+                    'muzzle_link',
+
+                'muzzle_clearance':
+                    0.55,
+
+                'ball_radius':
+                    0.038,
+
+                'ball_mass':
+                    0.15,
+            },
+        ],
+        output='screen',
+    )
+
+    fire_adapter = Node(
+        package='ball_launch_sim',
+        executable='fire_command_adapter',
+        name='fire_command_adapter',
+        parameters=[
+            {
+                'muzzle_speed_mps':
+                    18.0,
+            },
+        ],
+        output='screen',
+    )
+
+    grpc_server = Node(
+        package='grpc_ros_bridge',
+        executable='naval_bridge_server',
+        name='naval_bridge_server',
+        output='screen',
+    )
+
+    return LaunchDescription([
+        SetEnvironmentVariable(
+            name='GZ_SIM_RESOURCE_PATH',
+            value=resource_path,
+        ),
+
+        SetEnvironmentVariable(
+            name='GZ_SIM_SYSTEM_PLUGIN_PATH',
+            value=plugin_path,
+        ),
+
+        SetEnvironmentVariable(
+            name='LD_LIBRARY_PATH',
+            value=library_path,
+        ),
+
+        gazebo,
+        pan_tilt_bridge,
+        telemetry_bridge,
+        platform_pose_bridge,
+        target_pose_bridge,
+        telemetry_node,
+        gun_rate_controller,
+        ball_spawner,
+        fire_adapter,
+        grpc_server,
+    ])

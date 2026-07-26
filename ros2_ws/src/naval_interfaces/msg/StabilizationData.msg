@@ -1,0 +1,9 @@
+uint64 sequence
+string platform_id
+float64 roll
+float64 pitch
+float64 yaw
+float64 roll_rate
+float64 pitch_rate
+float64 yaw_rate
+builtin_interfaces/Time timestamp

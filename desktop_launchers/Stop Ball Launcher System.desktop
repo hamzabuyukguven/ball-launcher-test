@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stop Ball Launcher System
+Comment=Stop the Ball Launcher system
+Exec=/home/fatih/ball_launcher_desktop_launcher.sh stop
+Terminal=false
+Icon=utilities-terminal
+Categories=Development;
+StartupNotify=false

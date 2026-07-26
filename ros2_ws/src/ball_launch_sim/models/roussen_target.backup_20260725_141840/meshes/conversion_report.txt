@@ -1,0 +1,9 @@
+length_x_m=62.0000
+width_y_m=9.2668
+height_z_m=21.0798
+min_z_m=-2.6000
+max_z_m=18.4798
+faces_before=104840
+faces_after=216995
+waterline_z_m=0.0
+draft_m=2.6000
