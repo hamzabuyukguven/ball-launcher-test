@@ -178,7 +178,39 @@
           </contact>
         </surface>
       </collision>
-    </link>
+    <!-- Geçici kırmızı plaka testi -->
+    <visual name="port_side_nameplate">
+      <pose>20 7.0 1.5 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>15 0.15 4</size>
+        </box>
+      </geometry>
+      <material>
+        <ambient>1 0 0 1</ambient>
+        <diffuse>1 0 0 1</diffuse>
+        <specular>0 0 0 1</specular>
+        <emissive>1 0 0 1</emissive>
+      </material>
+      <cast_shadows>false</cast_shadows>
+    </visual>
+
+    <visual name="starboard_side_nameplate">
+      <pose>20 -7.0 1.5 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>15 0.15 4</size>
+        </box>
+      </geometry>
+      <material>
+        <ambient>1 0 0 1</ambient>
+        <diffuse>1 0 0 1</diffuse>
+        <specular>0 0 0 1</specular>
+        <emissive>1 0 0 1</emissive>
+      </material>
+      <cast_shadows>false</cast_shadows>
+    </visual>   
+ </link>
     <joint name="ship_world_fixed" type="fixed">
       <parent>world</parent>
       <child>ship_link</child>
@@ -323,11 +355,7 @@
       <initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
-      <joint_name>tilt_joint</joint_name>
-      <topic>/heybeliada/tilt_cmd</topic>
-      <use_velocity_commands>true</use_velocity_commands>
-      <cmd_max>0.20</cmd_max>
-      <initial_position>0.0</initial_position>
+      <joint_name>tilt_joint</joint_name><topic>/heybeliada/tilt_cmd</topic><use_velocity_commands>true</use_velocity_commands><cmd_max>0.20</cmd_max><initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher" />
     <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">

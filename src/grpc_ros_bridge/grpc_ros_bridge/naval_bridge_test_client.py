@@ -5,180 +5,164 @@ import math
 import time
 
 import grpc
+from google.protobuf.timestamp_pb2 import Timestamp
 
-from . import naval_bridge_pb2
-from . import naval_bridge_pb2_grpc
+from grpc_ros_bridge import naval_bridge_pb2
+from grpc_ros_bridge import naval_bridge_pb2_grpc
 
 
 def finite_number(value: str) -> float:
     number = float(value)
-
     if not math.isfinite(number):
-        raise argparse.ArgumentTypeError(
-            'The value must be a finite number.'
-        )
-
+        raise argparse.ArgumentTypeError('Value must be finite.')
     return number
+
+
+def now_timestamp() -> Timestamp:
+    timestamp = Timestamp()
+    timestamp.GetCurrentTime()
+    return timestamp
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description='Send gun rate commands over gRPC.'
+        description=(
+            'Test separated movement and fire RPCs over gRPC.'
+        )
     )
-
+    parser.add_argument('--host', default='127.0.0.1')
+    parser.add_argument('--port', type=int, default=50052)
+    parser.add_argument('--pan-rate', type=finite_number, default=0.0)
+    parser.add_argument('--tilt-rate', type=finite_number, default=0.0)
     parser.add_argument(
-        '--host',
-        default='127.0.0.1',
-    )
-
-    parser.add_argument(
-        '--port',
-        type=int,
-        default=50052,
-    )
-
-    parser.add_argument(
-        '--pan-rate',
+        '--muzzle-velocity',
         type=finite_number,
-        default=0.0,
+        default=18.0,
+        help='Projectile muzzle velocity in m/s.',
     )
-
-    parser.add_argument(
-        '--tilt-rate',
-        type=finite_number,
-        default=0.0,
-    )
-
-    parser.add_argument(
-        '--duration',
-        type=finite_number,
-        default=3.0,
-    )
-
-    parser.add_argument(
-        '--rate',
-        type=finite_number,
-        default=20.0,
-    )
-
-    parser.add_argument(
-        '--fire',
-        action='store_true',
-    )
-
+    parser.add_argument('--duration', type=finite_number, default=3.0)
+    parser.add_argument('--rate', type=finite_number, default=20.0)
+    parser.add_argument('--fire', action='store_true')
     args = parser.parse_args()
 
+    if args.muzzle_velocity <= 0.0:
+        raise SystemExit('ERROR: Muzzle velocity must be positive.')
     if args.rate <= 0.0:
-        raise SystemExit(
-            'ERROR: Rate must be greater than zero.'
-        )
-
+        raise SystemExit('ERROR: Rate must be positive.')
     if args.duration <= 0.0:
-        raise SystemExit(
-            'ERROR: Duration must be greater than zero.'
-        )
-
+        raise SystemExit('ERROR: Duration must be positive.')
     if abs(args.pan_rate) > 0.35:
-        raise SystemExit(
-            'ERROR: Pan rate range is -0.35 to 0.35 rad/s.'
-        )
-
+        raise SystemExit('ERROR: Pan rate range is -0.35 to 0.35 rad/s.')
     if abs(args.tilt_rate) > 0.20:
-        raise SystemExit(
-            'ERROR: Tilt rate range is -0.20 to 0.20 rad/s.'
-        )
+        raise SystemExit('ERROR: Tilt rate range is -0.20 to 0.20 rad/s.')
 
     address = f'{args.host}:{args.port}'
-
     channel = grpc.insecure_channel(address)
-
     print(f'Connecting to {address}...')
 
     try:
-        grpc.channel_ready_future(channel).result(
-            timeout=5.0
-        )
+        grpc.channel_ready_future(channel).result(timeout=5.0)
     except grpc.FutureTimeoutError:
         channel.close()
-
-        raise SystemExit(
-            f'ERROR: Could not connect to {address}.'
-        )
+        raise SystemExit(f'ERROR: Could not connect to {address}.')
 
     print('Connected.')
-
-    stub = naval_bridge_pb2_grpc.NavalBridgeServiceStub(
-        channel
-    )
-
-    sequence = 1
+    stub = naval_bridge_pb2_grpc.NavalBridgeServiceStub(channel)
+    movement_sequence = 1
+    fire_sequence = 1
     period = 1.0 / args.rate
-    end_time = time.monotonic() + args.duration
-
-    fire_pending = args.fire
-    sent_count = 0
+    movement_end_time = time.monotonic() + args.duration
+    fire_sent = False
+    movement_packet_count = 0
 
     try:
-        while time.monotonic() < end_time:
-            request = naval_bridge_pb2.GunRateCommandRequest(
-                sequence=sequence,
-                pan_rate_rad_s=args.pan_rate,
-                tilt_rate_rad_s=args.tilt_rate,
+        while time.monotonic() < movement_end_time:
+            movement_request = naval_bridge_pb2.GunRateCommandRequest(
+                sequence=movement_sequence,
+                pan_rate=args.pan_rate,
+                tilt_rate=args.tilt_rate,
                 control_enabled=True,
-                fire=fire_pending,
-                timestamp_ms=int(time.time() * 1000),
+                timestamp=now_timestamp(),
             )
-
-            reply = stub.SendGunRateCommand(
-                request,
+            movement_reply = stub.SendGunRateCommand(
+                movement_request,
                 timeout=2.0,
             )
-
-            if not reply.accepted:
+            if not movement_reply.accepted:
                 raise SystemExit(
-                    f'Command rejected: {reply.message}'
+                    f'Movement command rejected: {movement_reply.message}'
                 )
 
-            fire_pending = False
-            sequence += 1
-            sent_count += 1
+            # Fire is a separate category and is sent exactly once.
+            if args.fire and not fire_sent:
+                fire_request = naval_bridge_pb2.FireCommandRequest(
+                    sequence=fire_sequence,
+                    muzzle_velocity=args.muzzle_velocity,
+                    timestamp=now_timestamp(),
+                )
+                fire_reply = stub.SendFireCommand(
+                    fire_request,
+                    timeout=2.0,
+                )
+                if not fire_reply.accepted:
+                    raise SystemExit(
+                        f'Fire command rejected: {fire_reply.message}'
+                    )
+                print('Fire command queued separately from movement.')
+                fire_sent = True
 
+            movement_sequence += 1
+            movement_packet_count += 1
             time.sleep(period)
 
-        stop_request = (
-            naval_bridge_pb2.GunRateCommandRequest(
-                sequence=sequence,
-                pan_rate_rad_s=0.0,
-                tilt_rate_rad_s=0.0,
-                control_enabled=False,
-                fire=False,
-                timestamp_ms=int(time.time() * 1000),
-            )
-        )
+        print('Movement completed. Waiting for gun settling...')
+        settle_end_time = time.monotonic() + 2.0
+        settle_packet_count = 0
 
-        stop_reply = stub.SendGunRateCommand(
-            stop_request,
+        while time.monotonic() < settle_end_time:
+            settle_request = naval_bridge_pb2.GunRateCommandRequest(
+                sequence=movement_sequence,
+                pan_rate=0.0,
+                tilt_rate=0.0,
+                control_enabled=True,
+                timestamp=now_timestamp(),
+            )
+            settle_reply = stub.SendGunRateCommand(
+                settle_request,
+                timeout=2.0,
+            )
+            if not settle_reply.accepted:
+                raise SystemExit(
+                    f'Settle command rejected: {settle_reply.message}'
+                )
+            movement_sequence += 1
+            settle_packet_count += 1
+            time.sleep(period)
+
+        disable_request = naval_bridge_pb2.GunRateCommandRequest(
+            sequence=movement_sequence,
+            pan_rate=0.0,
+            tilt_rate=0.0,
+            control_enabled=False,
+            timestamp=now_timestamp(),
+        )
+        disable_reply = stub.SendGunRateCommand(
+            disable_request,
             timeout=2.0,
         )
-
-        if not stop_reply.accepted:
+        if not disable_reply.accepted:
             raise SystemExit(
-                f'Stop command rejected: '
-                f'{stop_reply.message}'
+                f'Disable command rejected: {disable_reply.message}'
             )
 
-        print(f'Command packets sent: {sent_count}')
-        print(
-            'Command completed and an explicit '
-            'stop command was sent.'
-        )
+        print(f'Movement packets sent: {movement_packet_count}')
+        print(f'Settling packets sent: {settle_packet_count}')
+        print('Movement, optional fire, settling and disable completed.')
 
     except grpc.RpcError as error:
         raise SystemExit(
-            f'gRPC error: '
-            f'{error.code().name}: {error.details()}'
+            f'gRPC error: {error.code().name}: {error.details()}'
         )
-
     finally:
         channel.close()
 

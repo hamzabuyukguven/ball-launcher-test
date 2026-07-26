@@ -1,0 +1,343 @@
+#!/usr/bin/env python3
+
+import os
+from pathlib import Path
+
+from ament_index_python.packages import get_package_prefix
+from launch import LaunchDescription
+from launch.actions import (
+    ExecuteProcess,
+    SetEnvironmentVariable,
+)
+from launch_ros.actions import Node
+
+
+def append_paths(*paths: object) -> str:
+    """
+    Boş olmayan klasör yollarını Linux PATH biçiminde birleştirir.
+    Örnek:
+        /birinci/yol:/ikinci/yol
+    """
+    return os.pathsep.join(
+        str(path)
+        for path in paths
+        if path
+    )
+
+
+def generate_launch_description():
+    home = Path.home()
+
+    # -------------------------------------------------------
+    # Ana proje yolları
+    # -------------------------------------------------------
+
+    ball_workspace = (
+        home
+        / 'ball_launcher_ws'
+    )
+
+    ball_package = (
+        ball_workspace
+        / 'src'
+        / 'ball_launch_sim'
+    )
+
+    world_file = (
+        ball_package
+        / 'worlds'
+        / 'heybeliada_sydney_float.sdf'
+    )
+
+    ball_models_directory = (
+        ball_package
+        / 'models'
+    )
+
+    # -------------------------------------------------------
+    # Sydney / gazebo_maritime yolları
+    # -------------------------------------------------------
+
+    maritime_install = (
+        home
+        / 'sydney_package_tmp'
+        / 'gazebo_maritime_ws'
+        / 'install'
+    )
+
+    maritime_models_directory = (
+        maritime_install
+        / 'share'
+        / 'gazebo_maritime'
+        / 'models'
+    )
+
+    maritime_plugin_directory = (
+        maritime_install
+        / 'lib'
+    )
+
+    # -------------------------------------------------------
+    # Mermi fırlatma Gazebo eklentisi
+    # -------------------------------------------------------
+
+    projectile_plugin_directory = (
+        Path(
+            get_package_prefix(
+                'projectile_launch_plugin'
+            )
+        )
+        / 'lib'
+    )
+
+    # -------------------------------------------------------
+    # Önceden tanımlanmış ortam yollarını koru
+    # -------------------------------------------------------
+
+    old_resource_path = os.environ.get(
+        'GZ_SIM_RESOURCE_PATH',
+        '',
+    )
+
+    old_system_plugin_path = os.environ.get(
+        'GZ_SIM_SYSTEM_PLUGIN_PATH',
+        '',
+    )
+
+    old_library_path = os.environ.get(
+        'LD_LIBRARY_PATH',
+        '',
+    )
+
+    resource_path = append_paths(
+        ball_models_directory,
+        maritime_models_directory,
+        old_resource_path,
+    )
+
+    system_plugin_path = append_paths(
+        projectile_plugin_directory,
+        maritime_plugin_directory,
+        old_system_plugin_path,
+    )
+
+    library_path = append_paths(
+        projectile_plugin_directory,
+        maritime_plugin_directory,
+        old_library_path,
+    )
+
+    # -------------------------------------------------------
+    # Gazebo
+    # -------------------------------------------------------
+
+    gazebo = ExecuteProcess(
+        cmd=[
+            'gz',
+            'sim',
+            '-v',
+            '4',
+            '-r',
+            str(world_file),
+        ],
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # Pan / tilt ROS <-> Gazebo bridge
+    # -------------------------------------------------------
+
+    pan_tilt_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='heybeliada_pan_tilt_bridge',
+        arguments=[
+            (
+                '/heybeliada/pan_cmd'
+                '@std_msgs/msg/Float64'
+                '@gz.msgs.Double'
+            ),
+            (
+                '/heybeliada/tilt_cmd'
+                '@std_msgs/msg/Float64'
+                '@gz.msgs.Double'
+            ),
+        ],
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # Joint-state bridge
+    #
+    # World artık sydney_regatta.
+    # Model örneği artık heybeliada_ship_float_test.
+    # -------------------------------------------------------
+
+    joint_state_gz_topic = (
+        '/world/sydney_regatta'
+        '/model/heybeliada_ship_float_test'
+        '/joint_state'
+    )
+
+    telemetry_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='heybeliada_telemetry_bridge',
+        arguments=[
+            (
+                joint_state_gz_topic
+                + '@sensor_msgs/msg/JointState'
+                + '[gz.msgs.Model'
+            ),
+        ],
+        remappings=[
+            (
+                joint_state_gz_topic,
+                '/joint_states',
+            ),
+        ],
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # Simülasyon telemetrisi
+    #
+    # platform_id backend tarafındaki mantıksal kimliktir.
+    # Gazebo model adı olmak zorunda değildir.
+    #
+    # Bu koordinatlar şimdilik başlangıç değerleridir.
+    # İleride gerçek Gazebo pose bilgisini bağlayacağız.
+    # -------------------------------------------------------
+
+    telemetry_node = Node(
+        package='grpc_ros_bridge',
+        executable='simulation_telemetry_node',
+        name='simulation_telemetry_node',
+        parameters=[
+            {
+                'platform_id': 'heybeliada_ship',
+
+                'platform_x_m': -276.0,
+                'platform_y_m': 220.0,
+                'platform_z_m': 2.0,
+                'platform_yaw_rad': 3.094,
+            },
+        ],
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # Backend hız komutunu pan / tilt topiclerine dönüştürür
+    # -------------------------------------------------------
+
+    gun_rate_controller = Node(
+        package='ball_launch_sim',
+        executable='gun_rate_controller',
+        name='gun_rate_controller',
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # Mermi oluşturucu
+    #
+    # Buradaki üç parametre kritik:
+    #
+    # world_name:
+    #   Merminin oluşturulacağı Gazebo world.
+    #
+    # reference_model:
+    #   World içindeki gerçek Heybeliada entity adı.
+    #
+    # reference_link:
+    #   Merminin çıkacağı namlu linki.
+    # -------------------------------------------------------
+
+    ball_spawner = Node(
+        package='ball_launch_sim',
+        executable='ball_spawner',
+        name='ball_spawner',
+        parameters=[
+            {
+                'world_name':
+                    'sydney_regatta',
+
+                'reference_model':
+                    'heybeliada_ship_float_test',
+
+                'reference_link':
+                    'muzzle_link',
+
+                'muzzle_clearance':
+                    0.55,
+
+                'ball_radius':
+                    0.12,
+
+                'ball_mass':
+                    0.15,
+            },
+        ],
+        output='screen',
+    )
+
+    # -------------------------------------------------------
+    # /simulation/fire_request
+    #             ↓
+    # /launch_velocity
+    # -------------------------------------------------------
+
+ 
+fire_adapter = Node(
+    package='ball_launch_sim',
+    executable='fire_command_adapter',
+    name='fire_command_adapter',
+    parameters=[
+        {
+            'muzzle_speed_mps': 60.0,
+        },
+    ],
+    output='screen',
+)
+
+
+
+    # -------------------------------------------------------
+    # Backend ile gRPC haberleşme sunucusu
+    # Port varsayılan olarak 50052
+    # -------------------------------------------------------
+
+    grpc_server = Node(
+        package='grpc_ros_bridge',
+        executable='naval_bridge_server',
+        name='naval_bridge_server',
+        output='screen',
+    )
+
+    return LaunchDescription([
+        # Önce Gazebo’nun ihtiyaç duyduğu ortam değişkenleri
+        # tanımlanır.
+        SetEnvironmentVariable(
+            name='GZ_SIM_RESOURCE_PATH',
+            value=resource_path,
+        ),
+
+        SetEnvironmentVariable(
+            name='GZ_SIM_SYSTEM_PLUGIN_PATH',
+            value=system_plugin_path,
+        ),
+
+        SetEnvironmentVariable(
+            name='LD_LIBRARY_PATH',
+            value=library_path,
+        ),
+
+        # Ardından Gazebo ve ROS 2 node’ları başlatılır.
+        gazebo,
+        pan_tilt_bridge,
+        telemetry_bridge,
+        telemetry_node,
+        gun_rate_controller,
+        ball_spawner,
+        fire_adapter,
+        grpc_server,
+    ])

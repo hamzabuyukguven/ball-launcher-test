@@ -7,18 +7,22 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GunRateCommand.msg"
+  "msg/FireCommand.msg"
   "msg/GunInfo.msg"
-  "msg/PlatformInfo.msg"
-  "msg/TargetInfo.msg"
+  "msg/GunStatusInfo.msg"
+  "msg/PlatformPositionInfo.msg"
+  "msg/PlatformVelocityInfo.msg"
+  "msg/StabilizationData.msg"
+  "msg/PlatformStatusInfo.msg"
+  "msg/TargetPositionInfo.msg"
   "msg/Heartbeat.msg"
   DEPENDENCIES
-  std_msgs
+  builtin_interfaces
 )
 
 ament_export_dependencies(rosidl_default_runtime)
-
 ament_package()

@@ -1,0 +1,3 @@
+uint64 sequence
+float64 muzzle_velocity
+builtin_interfaces/Time timestamp

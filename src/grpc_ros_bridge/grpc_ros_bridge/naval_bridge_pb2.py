@@ -13,14 +13,16 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='naval_bridge.proto',
   package='naval_bridge',
   syntax='proto3',
-  serialized_pb=_b('\n\x12naval_bridge.proto\x12\x0cnaval_bridge\"%\n\x10SubscribeRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"\x97\x01\n\x15GunRateCommandRequest\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x16\n\x0epan_rate_rad_s\x18\x02 \x01(\x01\x12\x17\n\x0ftilt_rate_rad_s\x18\x03 \x01(\x01\x12\x17\n\x0f\x63ontrol_enabled\x18\x04 \x01(\x08\x12\x0c\n\x04\x66ire\x18\x05 \x01(\x08\x12\x14\n\x0ctimestamp_ms\x18\x06 \x01(\x03\"\xcb\x01\n\x11TargetInfoRequest\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x11\n\ttarget_id\x18\x02 \x01(\t\x12\x14\n\x0cposition_x_m\x18\x03 \x01(\x01\x12\x14\n\x0cposition_y_m\x18\x04 \x01(\x01\x12\x16\n\x0ehas_position_z\x18\x05 \x01(\x08\x12\x14\n\x0cposition_z_m\x18\x06 \x01(\x01\x12\x12\n\nconfidence\x18\x07 \x01(\x02\x12\r\n\x05valid\x18\x08 \x01(\x08\x12\x14\n\x0ctimestamp_ms\x18\t \x01(\x03\"\xc9\x02\n\x07GunInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x0e\n\x06gun_id\x18\x02 \x01(\t\x12\x15\n\rpan_angle_rad\x18\x03 \x01(\x01\x12\x16\n\x0etilt_angle_rad\x18\x04 \x01(\x01\x12\x16\n\x0epan_rate_rad_s\x18\x05 \x01(\x01\x12\x17\n\x0ftilt_rate_rad_s\x18\x06 \x01(\x01\x12 \n\x18\x63ommanded_pan_rate_rad_s\x18\x07 \x01(\x01\x12!\n\x19\x63ommanded_tilt_rate_rad_s\x18\x08 \x01(\x01\x12\x17\n\x0f\x63ontrol_enabled\x18\t \x01(\x08\x12\x15\n\rready_to_fire\x18\n \x01(\x08\x12\x0e\n\x06\x66iring\x18\x0b \x01(\x08\x12\r\n\x05\x66\x61ult\x18\x0c \x01(\x08\x12\x12\n\nfault_text\x18\r \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x0e \x01(\x03\"\xa6\x02\n\x0cPlatformInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x13\n\x0bplatform_id\x18\x02 \x01(\t\x12\x14\n\x0cposition_x_m\x18\x03 \x01(\x01\x12\x14\n\x0cposition_y_m\x18\x04 \x01(\x01\x12\x14\n\x0cposition_z_m\x18\x05 \x01(\x01\x12\x16\n\x0evelocity_x_mps\x18\x06 \x01(\x01\x12\x16\n\x0evelocity_y_mps\x18\x07 \x01(\x01\x12\x16\n\x0evelocity_z_mps\x18\x08 \x01(\x01\x12\x0f\n\x07yaw_rad\x18\t \x01(\x01\x12\x16\n\x0eyaw_rate_rad_s\x18\n \x01(\x01\x12\x18\n\x10simulation_ready\x18\x0b \x01(\x08\x12\x0c\n\x04mode\x18\x0c \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\r \x01(\x03\"z\n\tHeartbeat\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0f\n\x07healthy\x18\x03 \x01(\x08\x12\r\n\x05state\x18\x04 \x01(\t\x12\x12\n\nuptime_sec\x18\x05 \x01(\x01\x12\x14\n\x0ctimestamp_ms\x18\x06 \x01(\x03\"\xab\x01\n\x10SimulationPacket\x12)\n\x08gun_info\x18\x01 \x01(\x0b\x32\x15.naval_bridge.GunInfoH\x00\x12\x33\n\rplatform_info\x18\x02 \x01(\x0b\x32\x1a.naval_bridge.PlatformInfoH\x00\x12,\n\theartbeat\x18\x03 \x01(\x0b\x32\x17.naval_bridge.HeartbeatH\x00\x42\t\n\x07payload\"C\n\x0c\x43ommandReply\x12\x10\n\x08\x61\x63\x63\x65pted\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x10\n\x08sequence\x18\x03 \x01(\x04\x32\x97\x02\n\x12NavalBridgeService\x12U\n\x12SendGunRateCommand\x12#.naval_bridge.GunRateCommandRequest\x1a\x1a.naval_bridge.CommandReply\x12M\n\x0eSendTargetInfo\x12\x1f.naval_bridge.TargetInfoRequest\x1a\x1a.naval_bridge.CommandReply\x12[\n\x17StreamSimulationPackets\x12\x1e.naval_bridge.SubscribeRequest\x1a\x1e.naval_bridge.SimulationPacket0\x01\x42)\n\x13\x63om.heybeliada.grpcB\x10NavalBridgeProtoP\x01\x62\x06proto3')
-)
+  serialized_pb=_b('\n\x12naval_bridge.proto\x12\x0cnaval_bridge\x1a\x1fgoogle/protobuf/timestamp.proto\"%\n\x10SubscribeRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"\xbd\x01\n\x15GunRateCommandRequest\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x10\n\x08pan_rate\x18\x02 \x01(\x01\x12\x11\n\ttilt_rate\x18\x03 \x01(\x01\x12\x17\n\x0f\x63ontrol_enabled\x18\x04 \x01(\x08\x12-\n\ttimestamp\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampJ\x04\x08\x05\x10\x06J\x04\x08\x07\x10\x08R\x04\x66ireR\x13muzzle_velocity_mps\"n\n\x12\x46ireCommandRequest\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x17\n\x0fmuzzle_velocity\x18\x02 \x01(\x01\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xa4\x01\n\x12TargetPositionInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x11\n\ttarget_id\x18\x02 \x01(\t\x12\x12\n\nposition_x\x18\x03 \x01(\x01\x12\x12\n\nposition_y\x18\x04 \x01(\x01\x12\x12\n\nposition_z\x18\x05 \x01(\x01\x12-\n\ttimestamp\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xb4\x02\n\x07GunInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x0e\n\x06gun_id\x18\x02 \x01(\t\x12\x11\n\tpan_angle\x18\x03 \x01(\x01\x12\x12\n\ntilt_angle\x18\x04 \x01(\x01\x12\x10\n\x08pan_rate\x18\x05 \x01(\x01\x12\x11\n\ttilt_rate\x18\x06 \x01(\x01\x12-\n\ttimestamp\x18\x0e \x01(\x0b\x32\x1a.google.protobuf.TimestampJ\x04\x08\x07\x10\x08J\x04\x08\x08\x10\tJ\x04\x08\t\x10\nJ\x04\x08\n\x10\x0bJ\x04\x08\x0b\x10\x0cJ\x04\x08\x0c\x10\rJ\x04\x08\r\x10\x0eR\x12\x63ommanded_pan_rateR\x13\x63ommanded_tilt_rateR\x0f\x63ontrol_enabledR\rready_to_fireR\x06\x66iringR\x05\x66\x61ultR\nfault_text\"\xc3\x01\n\rGunStatusInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x0e\n\x06gun_id\x18\x02 \x01(\t\x12\x17\n\x0f\x63ontrol_enabled\x18\x03 \x01(\x08\x12\x15\n\rready_to_fire\x18\x04 \x01(\x08\x12\x0e\n\x06\x66iring\x18\x05 \x01(\x08\x12\r\n\x05\x66\x61ult\x18\x06 \x01(\x08\x12\x12\n\nfault_text\x18\x07 \x01(\t\x12-\n\ttimestamp\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xa8\x01\n\x14PlatformPositionInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x13\n\x0bplatform_id\x18\x02 \x01(\t\x12\x12\n\nposition_x\x18\x03 \x01(\x01\x12\x12\n\nposition_y\x18\x04 \x01(\x01\x12\x12\n\nposition_z\x18\x05 \x01(\x01\x12-\n\ttimestamp\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xa8\x01\n\x14PlatformVelocityInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x13\n\x0bplatform_id\x18\x02 \x01(\t\x12\x12\n\nvelocity_x\x18\x03 \x01(\x01\x12\x12\n\nvelocity_y\x18\x04 \x01(\x01\x12\x12\n\nvelocity_z\x18\x05 \x01(\x01\x12-\n\ttimestamp\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xcc\x01\n\x11StabilizationData\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x13\n\x0bplatform_id\x18\x02 \x01(\t\x12\x0c\n\x04roll\x18\x03 \x01(\x01\x12\r\n\x05pitch\x18\x04 \x01(\x01\x12\x0b\n\x03yaw\x18\x05 \x01(\x01\x12\x11\n\troll_rate\x18\x06 \x01(\x01\x12\x12\n\npitch_rate\x18\x07 \x01(\x01\x12\x10\n\x08yaw_rate\x18\x08 \x01(\x01\x12-\n\ttimestamp\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x92\x01\n\x12PlatformStatusInfo\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x13\n\x0bplatform_id\x18\x02 \x01(\t\x12\x18\n\x10simulation_ready\x18\x03 \x01(\x08\x12\x0c\n\x04mode\x18\x04 \x01(\t\x12-\n\ttimestamp\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x8f\x01\n\tHeartbeat\x12\x10\n\x08sequence\x18\x01 \x01(\x04\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0f\n\x07healthy\x18\x03 \x01(\x08\x12\r\n\x05state\x18\x04 \x01(\t\x12\x0e\n\x06uptime\x18\x05 \x01(\x01\x12-\n\ttimestamp\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"r\n\x0c\x43ommandReply\x12\x10\n\x08\x61\x63\x63\x65pted\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x10\n\x08sequence\x18\x03 \x01(\x04\x12-\n\ttimestamp\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xfc\x06\n\x12NavalBridgeService\x12U\n\x12SendGunRateCommand\x12#.naval_bridge.GunRateCommandRequest\x1a\x1a.naval_bridge.CommandReply\x12O\n\x0fSendFireCommand\x12 .naval_bridge.FireCommandRequest\x1a\x1a.naval_bridge.CommandReply\x12Z\n\x14StreamTargetPosition\x12\x1e.naval_bridge.SubscribeRequest\x1a .naval_bridge.TargetPositionInfo0\x01\x12H\n\rStreamGunInfo\x12\x1e.naval_bridge.SubscribeRequest\x1a\x15.naval_bridge.GunInfo0\x01\x12P\n\x0fStreamGunStatus\x12\x1e.naval_bridge.SubscribeRequest\x1a\x1b.naval_bridge.GunStatusInfo0\x01\x12^\n\x16StreamPlatformPosition\x12\x1e.naval_bridge.SubscribeRequest\x1a\".naval_bridge.PlatformPositionInfo0\x01\x12^\n\x16StreamPlatformVelocity\x12\x1e.naval_bridge.SubscribeRequest\x1a\".naval_bridge.PlatformVelocityInfo0\x01\x12\\\n\x17StreamStabilizationData\x12\x1e.naval_bridge.SubscribeRequest\x1a\x1f.naval_bridge.StabilizationData0\x01\x12Z\n\x14StreamPlatformStatus\x12\x1e.naval_bridge.SubscribeRequest\x1a .naval_bridge.PlatformStatusInfo0\x01\x12L\n\x0fStreamHeartbeat\x12\x1e.naval_bridge.SubscribeRequest\x1a\x17.naval_bridge.Heartbeat0\x01\x42)\n\x13\x63om.heybeliada.grpcB\x10NavalBridgeProtoP\x01\x62\x06proto3')
+  ,
+  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
 
 
@@ -51,8 +53,8 @@ _SUBSCRIBEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=36,
-  serialized_end=73,
+  serialized_start=69,
+  serialized_end=106,
 )
 
 
@@ -71,14 +73,14 @@ _GUNRATECOMMANDREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pan_rate_rad_s', full_name='naval_bridge.GunRateCommandRequest.pan_rate_rad_s', index=1,
+      name='pan_rate', full_name='naval_bridge.GunRateCommandRequest.pan_rate', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tilt_rate_rad_s', full_name='naval_bridge.GunRateCommandRequest.tilt_rate_rad_s', index=2,
+      name='tilt_rate', full_name='naval_bridge.GunRateCommandRequest.tilt_rate', index=2,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -92,16 +94,9 @@ _GUNRATECOMMANDREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='fire', full_name='naval_bridge.GunRateCommandRequest.fire', index=4,
-      number=5, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='timestamp_ms', full_name='naval_bridge.GunRateCommandRequest.timestamp_ms', index=5,
-      number=6, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='naval_bridge.GunRateCommandRequest.timestamp', index=4,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -117,78 +112,36 @@ _GUNRATECOMMANDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=76,
-  serialized_end=227,
+  serialized_start=109,
+  serialized_end=298,
 )
 
 
-_TARGETINFOREQUEST = _descriptor.Descriptor(
-  name='TargetInfoRequest',
-  full_name='naval_bridge.TargetInfoRequest',
+_FIRECOMMANDREQUEST = _descriptor.Descriptor(
+  name='FireCommandRequest',
+  full_name='naval_bridge.FireCommandRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='sequence', full_name='naval_bridge.TargetInfoRequest.sequence', index=0,
+      name='sequence', full_name='naval_bridge.FireCommandRequest.sequence', index=0,
       number=1, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='target_id', full_name='naval_bridge.TargetInfoRequest.target_id', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='position_x_m', full_name='naval_bridge.TargetInfoRequest.position_x_m', index=2,
-      number=3, type=1, cpp_type=5, label=1,
+      name='muzzle_velocity', full_name='naval_bridge.FireCommandRequest.muzzle_velocity', index=1,
+      number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='position_y_m', full_name='naval_bridge.TargetInfoRequest.position_y_m', index=3,
-      number=4, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='has_position_z', full_name='naval_bridge.TargetInfoRequest.has_position_z', index=4,
-      number=5, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='position_z_m', full_name='naval_bridge.TargetInfoRequest.position_z_m', index=5,
-      number=6, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='confidence', full_name='naval_bridge.TargetInfoRequest.confidence', index=6,
-      number=7, type=2, cpp_type=6, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='valid', full_name='naval_bridge.TargetInfoRequest.valid', index=7,
-      number=8, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='timestamp_ms', full_name='naval_bridge.TargetInfoRequest.timestamp_ms', index=8,
-      number=9, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='naval_bridge.FireCommandRequest.timestamp', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -204,8 +157,74 @@ _TARGETINFOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=230,
-  serialized_end=433,
+  serialized_start=300,
+  serialized_end=410,
+)
+
+
+_TARGETPOSITIONINFO = _descriptor.Descriptor(
+  name='TargetPositionInfo',
+  full_name='naval_bridge.TargetPositionInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sequence', full_name='naval_bridge.TargetPositionInfo.sequence', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='target_id', full_name='naval_bridge.TargetPositionInfo.target_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_x', full_name='naval_bridge.TargetPositionInfo.position_x', index=2,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_y', full_name='naval_bridge.TargetPositionInfo.position_y', index=3,
+      number=4, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_z', full_name='naval_bridge.TargetPositionInfo.position_z', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.TargetPositionInfo.timestamp', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=413,
+  serialized_end=577,
 )
 
 
@@ -231,86 +250,37 @@ _GUNINFO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pan_angle_rad', full_name='naval_bridge.GunInfo.pan_angle_rad', index=2,
+      name='pan_angle', full_name='naval_bridge.GunInfo.pan_angle', index=2,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tilt_angle_rad', full_name='naval_bridge.GunInfo.tilt_angle_rad', index=3,
+      name='tilt_angle', full_name='naval_bridge.GunInfo.tilt_angle', index=3,
       number=4, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pan_rate_rad_s', full_name='naval_bridge.GunInfo.pan_rate_rad_s', index=4,
+      name='pan_rate', full_name='naval_bridge.GunInfo.pan_rate', index=4,
       number=5, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tilt_rate_rad_s', full_name='naval_bridge.GunInfo.tilt_rate_rad_s', index=5,
+      name='tilt_rate', full_name='naval_bridge.GunInfo.tilt_rate', index=5,
       number=6, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='commanded_pan_rate_rad_s', full_name='naval_bridge.GunInfo.commanded_pan_rate_rad_s', index=6,
-      number=7, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='commanded_tilt_rate_rad_s', full_name='naval_bridge.GunInfo.commanded_tilt_rate_rad_s', index=7,
-      number=8, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='control_enabled', full_name='naval_bridge.GunInfo.control_enabled', index=8,
-      number=9, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ready_to_fire', full_name='naval_bridge.GunInfo.ready_to_fire', index=9,
-      number=10, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='firing', full_name='naval_bridge.GunInfo.firing', index=10,
-      number=11, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='fault', full_name='naval_bridge.GunInfo.fault', index=11,
-      number=12, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='fault_text', full_name='naval_bridge.GunInfo.fault_text', index=12,
-      number=13, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='timestamp_ms', full_name='naval_bridge.GunInfo.timestamp_ms', index=13,
-      number=14, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='naval_bridge.GunInfo.timestamp', index=6,
+      number=14, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -326,106 +296,71 @@ _GUNINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=436,
-  serialized_end=765,
+  serialized_start=580,
+  serialized_end=888,
 )
 
 
-_PLATFORMINFO = _descriptor.Descriptor(
-  name='PlatformInfo',
-  full_name='naval_bridge.PlatformInfo',
+_GUNSTATUSINFO = _descriptor.Descriptor(
+  name='GunStatusInfo',
+  full_name='naval_bridge.GunStatusInfo',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='sequence', full_name='naval_bridge.PlatformInfo.sequence', index=0,
+      name='sequence', full_name='naval_bridge.GunStatusInfo.sequence', index=0,
       number=1, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='platform_id', full_name='naval_bridge.PlatformInfo.platform_id', index=1,
+      name='gun_id', full_name='naval_bridge.GunStatusInfo.gun_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='position_x_m', full_name='naval_bridge.PlatformInfo.position_x_m', index=2,
-      number=3, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='position_y_m', full_name='naval_bridge.PlatformInfo.position_y_m', index=3,
-      number=4, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='position_z_m', full_name='naval_bridge.PlatformInfo.position_z_m', index=4,
-      number=5, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='velocity_x_mps', full_name='naval_bridge.PlatformInfo.velocity_x_mps', index=5,
-      number=6, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='velocity_y_mps', full_name='naval_bridge.PlatformInfo.velocity_y_mps', index=6,
-      number=7, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='velocity_z_mps', full_name='naval_bridge.PlatformInfo.velocity_z_mps', index=7,
-      number=8, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='yaw_rad', full_name='naval_bridge.PlatformInfo.yaw_rad', index=8,
-      number=9, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='yaw_rate_rad_s', full_name='naval_bridge.PlatformInfo.yaw_rate_rad_s', index=9,
-      number=10, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='simulation_ready', full_name='naval_bridge.PlatformInfo.simulation_ready', index=10,
-      number=11, type=8, cpp_type=7, label=1,
+      name='control_enabled', full_name='naval_bridge.GunStatusInfo.control_enabled', index=2,
+      number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='mode', full_name='naval_bridge.PlatformInfo.mode', index=11,
-      number=12, type=9, cpp_type=9, label=1,
+      name='ready_to_fire', full_name='naval_bridge.GunStatusInfo.ready_to_fire', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='firing', full_name='naval_bridge.GunStatusInfo.firing', index=4,
+      number=5, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fault', full_name='naval_bridge.GunStatusInfo.fault', index=5,
+      number=6, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fault_text', full_name='naval_bridge.GunStatusInfo.fault_text', index=6,
+      number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp_ms', full_name='naval_bridge.PlatformInfo.timestamp_ms', index=12,
-      number=13, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
+      name='timestamp', full_name='naval_bridge.GunStatusInfo.timestamp', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -441,8 +376,286 @@ _PLATFORMINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=768,
-  serialized_end=1062,
+  serialized_start=891,
+  serialized_end=1086,
+)
+
+
+_PLATFORMPOSITIONINFO = _descriptor.Descriptor(
+  name='PlatformPositionInfo',
+  full_name='naval_bridge.PlatformPositionInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sequence', full_name='naval_bridge.PlatformPositionInfo.sequence', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='platform_id', full_name='naval_bridge.PlatformPositionInfo.platform_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_x', full_name='naval_bridge.PlatformPositionInfo.position_x', index=2,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_y', full_name='naval_bridge.PlatformPositionInfo.position_y', index=3,
+      number=4, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='position_z', full_name='naval_bridge.PlatformPositionInfo.position_z', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.PlatformPositionInfo.timestamp', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1089,
+  serialized_end=1257,
+)
+
+
+_PLATFORMVELOCITYINFO = _descriptor.Descriptor(
+  name='PlatformVelocityInfo',
+  full_name='naval_bridge.PlatformVelocityInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sequence', full_name='naval_bridge.PlatformVelocityInfo.sequence', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='platform_id', full_name='naval_bridge.PlatformVelocityInfo.platform_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='velocity_x', full_name='naval_bridge.PlatformVelocityInfo.velocity_x', index=2,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='velocity_y', full_name='naval_bridge.PlatformVelocityInfo.velocity_y', index=3,
+      number=4, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='velocity_z', full_name='naval_bridge.PlatformVelocityInfo.velocity_z', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.PlatformVelocityInfo.timestamp', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1260,
+  serialized_end=1428,
+)
+
+
+_STABILIZATIONDATA = _descriptor.Descriptor(
+  name='StabilizationData',
+  full_name='naval_bridge.StabilizationData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sequence', full_name='naval_bridge.StabilizationData.sequence', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='platform_id', full_name='naval_bridge.StabilizationData.platform_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='roll', full_name='naval_bridge.StabilizationData.roll', index=2,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pitch', full_name='naval_bridge.StabilizationData.pitch', index=3,
+      number=4, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='yaw', full_name='naval_bridge.StabilizationData.yaw', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='roll_rate', full_name='naval_bridge.StabilizationData.roll_rate', index=5,
+      number=6, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pitch_rate', full_name='naval_bridge.StabilizationData.pitch_rate', index=6,
+      number=7, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='yaw_rate', full_name='naval_bridge.StabilizationData.yaw_rate', index=7,
+      number=8, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.StabilizationData.timestamp', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1431,
+  serialized_end=1635,
+)
+
+
+_PLATFORMSTATUSINFO = _descriptor.Descriptor(
+  name='PlatformStatusInfo',
+  full_name='naval_bridge.PlatformStatusInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sequence', full_name='naval_bridge.PlatformStatusInfo.sequence', index=0,
+      number=1, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='platform_id', full_name='naval_bridge.PlatformStatusInfo.platform_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='simulation_ready', full_name='naval_bridge.PlatformStatusInfo.simulation_ready', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='mode', full_name='naval_bridge.PlatformStatusInfo.mode', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.PlatformStatusInfo.timestamp', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1638,
+  serialized_end=1784,
 )
 
 
@@ -482,60 +695,15 @@ _HEARTBEAT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='uptime_sec', full_name='naval_bridge.Heartbeat.uptime_sec', index=4,
+      name='uptime', full_name='naval_bridge.Heartbeat.uptime', index=4,
       number=5, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='timestamp_ms', full_name='naval_bridge.Heartbeat.timestamp_ms', index=5,
-      number=6, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1064,
-  serialized_end=1186,
-)
-
-
-_SIMULATIONPACKET = _descriptor.Descriptor(
-  name='SimulationPacket',
-  full_name='naval_bridge.SimulationPacket',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='gun_info', full_name='naval_bridge.SimulationPacket.gun_info', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='platform_info', full_name='naval_bridge.SimulationPacket.platform_info', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='heartbeat', full_name='naval_bridge.SimulationPacket.heartbeat', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='timestamp', full_name='naval_bridge.Heartbeat.timestamp', index=5,
+      number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -551,12 +719,9 @@ _SIMULATIONPACKET = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
-    _descriptor.OneofDescriptor(
-      name='payload', full_name='naval_bridge.SimulationPacket.payload',
-      index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1189,
-  serialized_end=1360,
+  serialized_start=1787,
+  serialized_end=1930,
 )
 
 
@@ -588,6 +753,13 @@ _COMMANDREPLY = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='naval_bridge.CommandReply.timestamp', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -600,29 +772,32 @@ _COMMANDREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1362,
-  serialized_end=1429,
+  serialized_start=1932,
+  serialized_end=2046,
 )
 
-_SIMULATIONPACKET.fields_by_name['gun_info'].message_type = _GUNINFO
-_SIMULATIONPACKET.fields_by_name['platform_info'].message_type = _PLATFORMINFO
-_SIMULATIONPACKET.fields_by_name['heartbeat'].message_type = _HEARTBEAT
-_SIMULATIONPACKET.oneofs_by_name['payload'].fields.append(
-  _SIMULATIONPACKET.fields_by_name['gun_info'])
-_SIMULATIONPACKET.fields_by_name['gun_info'].containing_oneof = _SIMULATIONPACKET.oneofs_by_name['payload']
-_SIMULATIONPACKET.oneofs_by_name['payload'].fields.append(
-  _SIMULATIONPACKET.fields_by_name['platform_info'])
-_SIMULATIONPACKET.fields_by_name['platform_info'].containing_oneof = _SIMULATIONPACKET.oneofs_by_name['payload']
-_SIMULATIONPACKET.oneofs_by_name['payload'].fields.append(
-  _SIMULATIONPACKET.fields_by_name['heartbeat'])
-_SIMULATIONPACKET.fields_by_name['heartbeat'].containing_oneof = _SIMULATIONPACKET.oneofs_by_name['payload']
+_GUNRATECOMMANDREQUEST.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_FIRECOMMANDREQUEST.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_TARGETPOSITIONINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_GUNINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_GUNSTATUSINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_PLATFORMPOSITIONINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_PLATFORMVELOCITYINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_STABILIZATIONDATA.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_PLATFORMSTATUSINFO.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_HEARTBEAT.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_COMMANDREPLY.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 DESCRIPTOR.message_types_by_name['SubscribeRequest'] = _SUBSCRIBEREQUEST
 DESCRIPTOR.message_types_by_name['GunRateCommandRequest'] = _GUNRATECOMMANDREQUEST
-DESCRIPTOR.message_types_by_name['TargetInfoRequest'] = _TARGETINFOREQUEST
+DESCRIPTOR.message_types_by_name['FireCommandRequest'] = _FIRECOMMANDREQUEST
+DESCRIPTOR.message_types_by_name['TargetPositionInfo'] = _TARGETPOSITIONINFO
 DESCRIPTOR.message_types_by_name['GunInfo'] = _GUNINFO
-DESCRIPTOR.message_types_by_name['PlatformInfo'] = _PLATFORMINFO
+DESCRIPTOR.message_types_by_name['GunStatusInfo'] = _GUNSTATUSINFO
+DESCRIPTOR.message_types_by_name['PlatformPositionInfo'] = _PLATFORMPOSITIONINFO
+DESCRIPTOR.message_types_by_name['PlatformVelocityInfo'] = _PLATFORMVELOCITYINFO
+DESCRIPTOR.message_types_by_name['StabilizationData'] = _STABILIZATIONDATA
+DESCRIPTOR.message_types_by_name['PlatformStatusInfo'] = _PLATFORMSTATUSINFO
 DESCRIPTOR.message_types_by_name['Heartbeat'] = _HEARTBEAT
-DESCRIPTOR.message_types_by_name['SimulationPacket'] = _SIMULATIONPACKET
 DESCRIPTOR.message_types_by_name['CommandReply'] = _COMMANDREPLY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -640,12 +815,19 @@ GunRateCommandRequest = _reflection.GeneratedProtocolMessageType('GunRateCommand
   ))
 _sym_db.RegisterMessage(GunRateCommandRequest)
 
-TargetInfoRequest = _reflection.GeneratedProtocolMessageType('TargetInfoRequest', (_message.Message,), dict(
-  DESCRIPTOR = _TARGETINFOREQUEST,
+FireCommandRequest = _reflection.GeneratedProtocolMessageType('FireCommandRequest', (_message.Message,), dict(
+  DESCRIPTOR = _FIRECOMMANDREQUEST,
   __module__ = 'naval_bridge_pb2'
-  # @@protoc_insertion_point(class_scope:naval_bridge.TargetInfoRequest)
+  # @@protoc_insertion_point(class_scope:naval_bridge.FireCommandRequest)
   ))
-_sym_db.RegisterMessage(TargetInfoRequest)
+_sym_db.RegisterMessage(FireCommandRequest)
+
+TargetPositionInfo = _reflection.GeneratedProtocolMessageType('TargetPositionInfo', (_message.Message,), dict(
+  DESCRIPTOR = _TARGETPOSITIONINFO,
+  __module__ = 'naval_bridge_pb2'
+  # @@protoc_insertion_point(class_scope:naval_bridge.TargetPositionInfo)
+  ))
+_sym_db.RegisterMessage(TargetPositionInfo)
 
 GunInfo = _reflection.GeneratedProtocolMessageType('GunInfo', (_message.Message,), dict(
   DESCRIPTOR = _GUNINFO,
@@ -654,12 +836,40 @@ GunInfo = _reflection.GeneratedProtocolMessageType('GunInfo', (_message.Message,
   ))
 _sym_db.RegisterMessage(GunInfo)
 
-PlatformInfo = _reflection.GeneratedProtocolMessageType('PlatformInfo', (_message.Message,), dict(
-  DESCRIPTOR = _PLATFORMINFO,
+GunStatusInfo = _reflection.GeneratedProtocolMessageType('GunStatusInfo', (_message.Message,), dict(
+  DESCRIPTOR = _GUNSTATUSINFO,
   __module__ = 'naval_bridge_pb2'
-  # @@protoc_insertion_point(class_scope:naval_bridge.PlatformInfo)
+  # @@protoc_insertion_point(class_scope:naval_bridge.GunStatusInfo)
   ))
-_sym_db.RegisterMessage(PlatformInfo)
+_sym_db.RegisterMessage(GunStatusInfo)
+
+PlatformPositionInfo = _reflection.GeneratedProtocolMessageType('PlatformPositionInfo', (_message.Message,), dict(
+  DESCRIPTOR = _PLATFORMPOSITIONINFO,
+  __module__ = 'naval_bridge_pb2'
+  # @@protoc_insertion_point(class_scope:naval_bridge.PlatformPositionInfo)
+  ))
+_sym_db.RegisterMessage(PlatformPositionInfo)
+
+PlatformVelocityInfo = _reflection.GeneratedProtocolMessageType('PlatformVelocityInfo', (_message.Message,), dict(
+  DESCRIPTOR = _PLATFORMVELOCITYINFO,
+  __module__ = 'naval_bridge_pb2'
+  # @@protoc_insertion_point(class_scope:naval_bridge.PlatformVelocityInfo)
+  ))
+_sym_db.RegisterMessage(PlatformVelocityInfo)
+
+StabilizationData = _reflection.GeneratedProtocolMessageType('StabilizationData', (_message.Message,), dict(
+  DESCRIPTOR = _STABILIZATIONDATA,
+  __module__ = 'naval_bridge_pb2'
+  # @@protoc_insertion_point(class_scope:naval_bridge.StabilizationData)
+  ))
+_sym_db.RegisterMessage(StabilizationData)
+
+PlatformStatusInfo = _reflection.GeneratedProtocolMessageType('PlatformStatusInfo', (_message.Message,), dict(
+  DESCRIPTOR = _PLATFORMSTATUSINFO,
+  __module__ = 'naval_bridge_pb2'
+  # @@protoc_insertion_point(class_scope:naval_bridge.PlatformStatusInfo)
+  ))
+_sym_db.RegisterMessage(PlatformStatusInfo)
 
 Heartbeat = _reflection.GeneratedProtocolMessageType('Heartbeat', (_message.Message,), dict(
   DESCRIPTOR = _HEARTBEAT,
@@ -667,13 +877,6 @@ Heartbeat = _reflection.GeneratedProtocolMessageType('Heartbeat', (_message.Mess
   # @@protoc_insertion_point(class_scope:naval_bridge.Heartbeat)
   ))
 _sym_db.RegisterMessage(Heartbeat)
-
-SimulationPacket = _reflection.GeneratedProtocolMessageType('SimulationPacket', (_message.Message,), dict(
-  DESCRIPTOR = _SIMULATIONPACKET,
-  __module__ = 'naval_bridge_pb2'
-  # @@protoc_insertion_point(class_scope:naval_bridge.SimulationPacket)
-  ))
-_sym_db.RegisterMessage(SimulationPacket)
 
 CommandReply = _reflection.GeneratedProtocolMessageType('CommandReply', (_message.Message,), dict(
   DESCRIPTOR = _COMMANDREPLY,
@@ -692,8 +895,8 @@ _NAVALBRIDGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=1432,
-  serialized_end=1711,
+  serialized_start=2049,
+  serialized_end=2941,
   methods=[
   _descriptor.MethodDescriptor(
     name='SendGunRateCommand',
@@ -705,21 +908,84 @@ _NAVALBRIDGESERVICE = _descriptor.ServiceDescriptor(
     options=None,
   ),
   _descriptor.MethodDescriptor(
-    name='SendTargetInfo',
-    full_name='naval_bridge.NavalBridgeService.SendTargetInfo',
+    name='SendFireCommand',
+    full_name='naval_bridge.NavalBridgeService.SendFireCommand',
     index=1,
     containing_service=None,
-    input_type=_TARGETINFOREQUEST,
+    input_type=_FIRECOMMANDREQUEST,
     output_type=_COMMANDREPLY,
     options=None,
   ),
   _descriptor.MethodDescriptor(
-    name='StreamSimulationPackets',
-    full_name='naval_bridge.NavalBridgeService.StreamSimulationPackets',
+    name='StreamTargetPosition',
+    full_name='naval_bridge.NavalBridgeService.StreamTargetPosition',
     index=2,
     containing_service=None,
     input_type=_SUBSCRIBEREQUEST,
-    output_type=_SIMULATIONPACKET,
+    output_type=_TARGETPOSITIONINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamGunInfo',
+    full_name='naval_bridge.NavalBridgeService.StreamGunInfo',
+    index=3,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_GUNINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamGunStatus',
+    full_name='naval_bridge.NavalBridgeService.StreamGunStatus',
+    index=4,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_GUNSTATUSINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamPlatformPosition',
+    full_name='naval_bridge.NavalBridgeService.StreamPlatformPosition',
+    index=5,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_PLATFORMPOSITIONINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamPlatformVelocity',
+    full_name='naval_bridge.NavalBridgeService.StreamPlatformVelocity',
+    index=6,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_PLATFORMVELOCITYINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamStabilizationData',
+    full_name='naval_bridge.NavalBridgeService.StreamStabilizationData',
+    index=7,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_STABILIZATIONDATA,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamPlatformStatus',
+    full_name='naval_bridge.NavalBridgeService.StreamPlatformStatus',
+    index=8,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_PLATFORMSTATUSINFO,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StreamHeartbeat',
+    full_name='naval_bridge.NavalBridgeService.StreamHeartbeat',
+    index=9,
+    containing_service=None,
+    input_type=_SUBSCRIBEREQUEST,
+    output_type=_HEARTBEAT,
     options=None,
   ),
 ])

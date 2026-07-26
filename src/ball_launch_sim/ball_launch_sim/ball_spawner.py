@@ -213,18 +213,76 @@ class BallSpawner(Node):
       </inertial>
 
 
-      <visual name="ball_visual">
+      <visual name="shell_body_visual">
+        <!-- Silindir varsayılan olarak Z eksenindedir.
+             Y etrafında 90 derece döndürülerek X yönüne alınır. -->
+        <pose>0 0 0 0 1.57079632679 0</pose>
+
         <geometry>
-          <sphere>
-            <radius>{self.ball_radius:.9f}</radius>
-          </sphere>
+          <cylinder>
+            <radius>0.038</radius>
+            <length>0.22</length>
+          </cylinder>
         </geometry>
 
         <material>
-          <ambient>1.0 0.05 0.05 1.0</ambient>
-          <diffuse>1.0 0.05 0.05 1.0</diffuse>
-          <specular>1.0 1.0 1.0 1.0</specular>
-          <emissive>0.35 0.0 0.0 1.0</emissive>
+          <ambient>0.16 0.17 0.15 1</ambient>
+          <diffuse>0.30 0.32 0.28 1</diffuse>
+          <specular>0.55 0.55 0.50 1</specular>
+          <pbr>
+            <metal>
+              <metalness>0.70</metalness>
+              <roughness>0.32</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <visual name="shell_nose_visual">
+        <!-- Sivri burun -->
+        <pose>0.16 0 0 0 1.57079632679 0</pose>
+
+        <geometry>
+          <cone>
+            <radius>0.038</radius>
+            <length>0.10</length>
+          </cone>
+        </geometry>
+
+        <material>
+          <ambient>0.12 0.13 0.12 1</ambient>
+          <diffuse>0.24 0.26 0.23 1</diffuse>
+          <specular>0.60 0.60 0.55 1</specular>
+          <pbr>
+            <metal>
+              <metalness>0.75</metalness>
+              <roughness>0.28</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <visual name="shell_band_visual">
+        <!-- Bakır tahrik bandı -->
+        <pose>-0.085 0 0 0 1.57079632679 0</pose>
+
+        <geometry>
+          <cylinder>
+            <radius>0.040</radius>
+            <length>0.018</length>
+          </cylinder>
+        </geometry>
+
+        <material>
+          <ambient>0.30 0.11 0.025 1</ambient>
+          <diffuse>0.68 0.25 0.055 1</diffuse>
+          <specular>0.70 0.42 0.18 1</specular>
+          <pbr>
+            <metal>
+              <metalness>0.80</metalness>
+              <roughness>0.25</roughness>
+            </metal>
+          </pbr>
         </material>
       </visual>
 

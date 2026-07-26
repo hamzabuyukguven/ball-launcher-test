@@ -1,9 +1,6 @@
-std_msgs/Header header
-
-string component
 uint64 sequence
-
+string component
 bool healthy
 string state
-
-float64 uptime_sec
+float64 uptime
+builtin_interfaces/Time timestamp
