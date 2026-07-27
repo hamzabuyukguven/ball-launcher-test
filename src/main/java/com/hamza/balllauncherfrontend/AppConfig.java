@@ -3,41 +3,70 @@ package com.hamza.balllauncherfrontend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class AppConfig {
-
+public final class AppConfig {
     private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
-    private static final Properties properties = new Properties();
+    private static final Properties PROPERTIES = new Properties();
 
     static {
         try (InputStream input = AppConfig.class.getResourceAsStream("config.properties")) {
             if (input != null) {
-                properties.load(input);
+                PROPERTIES.load(input);
                 logger.info("Configuration loaded from config.properties");
             } else {
-                logger.warn("config.properties not found, using defaults.");
+                logger.warn("config.properties not found; defaults will be used");
             }
-        } catch (IOException e) {
-            logger.error("Failed to load config.properties", e);
+        } catch (Exception e) {
+            logger.error("Could not load frontend configuration", e);
         }
     }
 
+    private AppConfig() {
+    }
+
+    private static String value(String propertyName, String envName, String defaultValue) {
+        String env = System.getenv(envName);
+        if (env != null && !env.isBlank()) return env.trim();
+        return PROPERTIES.getProperty(propertyName, defaultValue).trim();
+    }
+
     public static String getKafkaBootstrapServers() {
-        String envOverride = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
-        if (envOverride != null && !envOverride.isBlank()) {
-            return envOverride;
-        }
-        return properties.getProperty("kafka.bootstrap.servers", "localhost:9092");
+        return value("kafka.bootstrap.servers", "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
     }
 
     public static int getReportsMaxLines() {
         try {
-            return Integer.parseInt(properties.getProperty("reports.max.lines", "200"));
+            return Integer.parseInt(PROPERTIES.getProperty("reports.max.lines", "200"));
         } catch (NumberFormatException e) {
             return 200;
         }
     }
+
+
+    public static String commandTopic() {
+        return value("kafka.command.topic", "KAFKA_COMMAND_TOPIC", "launcher.commands");
+    }
+
+    public static String statusTopic() {
+        return value("kafka.status.topic", "KAFKA_STATUS_TOPIC", "launcher.status");
+    }
+
+    public static String telemetryTopic() {
+        return value("kafka.telemetry.topic", "KAFKA_TELEMETRY_TOPIC", "launcher.telemetry");
+    }
+
+    public static String reportsTopic() {
+        return value("kafka.reports.topic", "KAFKA_REPORTS_TOPIC", "launcher.reports");
+    }
+
+    public static String statusGroupId() {
+        return value("kafka.status.group.id", "KAFKA_STATUS_GROUP_ID", "launcher-frontend-status");
+    }
+
+    public static String reportsGroupId() {
+        return value("kafka.reports.group.id", "KAFKA_REPORTS_GROUP_ID", "launcher-frontend-reports");
+    }
 }
+
