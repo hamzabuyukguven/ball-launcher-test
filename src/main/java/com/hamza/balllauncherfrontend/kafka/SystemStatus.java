@@ -3,7 +3,7 @@ package com.hamza.balllauncherfrontend.kafka;
 public class SystemStatus {
 
     private boolean connected;
-    private String availability;
+    private String availability = "DISCONNECTED";
     private double platformAngle;
     private double cannonAngle;
     private long timestamp;
@@ -11,7 +11,10 @@ public class SystemStatus {
     private double yCoordinate;
     private int ammoCount;
     private String ammoType;
-    private String reportMessage;
+    private String reportMessage = "OK";
+
+    private boolean aimed;
+
     private boolean readyToFire;
 
     public SystemStatus() {
@@ -97,6 +100,14 @@ public class SystemStatus {
         this.reportMessage = reportMessage;
     }
 
+    public boolean isAimed() {
+        return aimed;
+    }
+
+    public void setAimed(boolean aimed) {
+        this.aimed = aimed;
+    }
+
     public boolean isReadyToFire() {
         return readyToFire;
     }
@@ -105,3 +116,4 @@ public class SystemStatus {
         this.readyToFire = readyToFire;
     }
 }
+
