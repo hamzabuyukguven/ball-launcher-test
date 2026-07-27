@@ -1,91 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.ComboBox?>
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.canvas.Canvas?>
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.ComboBox?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.control.Separator?>
+        <?import javafx.scene.control.TextArea?>
+        <?import javafx.scene.control.TextField?>
+        <?import javafx.scene.layout.BorderPane?>
+        <?import javafx.scene.layout.ColumnConstraints?>
+        <?import javafx.scene.layout.GridPane?>
+        <?import javafx.scene.layout.HBox?>
+        <?import javafx.scene.layout.Priority?>
+        <?import javafx.scene.layout.RowConstraints?>
+        <?import javafx.scene.layout.Region?>
+        <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.hamza.balllauncherfrontend.HelloController"
-            prefHeight="850.0" prefWidth="730.0"
-            style="-fx-background-color: #434449;">
+            style="-fx-background-color: #f4f6f8;">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #18324a; -fx-padding: 18;">
+            <Label text="BALL LAUNCHER CONTROL" style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;" />
+            <Label text="Simulation / Backend / Kafka" style="-fx-text-fill: #c9d8e5; -fx-font-size: 13px;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="Connection:" style="-fx-text-fill: white;" />
+            <Label fx:id="connectionLabel" text="DISCONNECTED"
+                   style="-fx-text-fill: #ffb3b3; -fx-font-weight: bold;" />
+        </HBox>
+    </top>
 
-    <AnchorPane prefHeight="100.0" style="-fx-background-color: #e5e5e5;"
-                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    <center>
+        <GridPane hgap="16" vgap="16" style="-fx-padding: 18;">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="34" hgrow="ALWAYS" />
+                <ColumnConstraints percentWidth="34" hgrow="ALWAYS" />
+                <ColumnConstraints percentWidth="32" hgrow="ALWAYS" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" />
+            </rowConstraints>
 
-    <HBox alignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-        <Label fx:id="readyLabel" text="NOT READY" alignment="CENTER"
-               prefWidth="160.0" prefHeight="40.0"
-               style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
-    </HBox>
+            <VBox spacing="12" GridPane.columnIndex="0"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 18; -fx-border-color: #d9e0e6; -fx-border-radius: 8;">
+                <Label text="System Telemetry" style="-fx-font-size: 17px; -fx-font-weight: bold;" />
+                <Separator />
+                <Label text="Status" style="-fx-text-fill: #607080;" />
+                <Label fx:id="availabilityLabel" text="DISCONNECTED" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
 
-    <Button text="REPORTS" onAction="#onReportsButtonClick"
-            prefWidth="160.0" prefHeight="40.0"
-            AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="200.0"
-            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px; -fx-alignment: center;"/>
+                <Label text="Platform Position" style="-fx-text-fill: #607080;" />
+                <Label fx:id="coordinatesLabel" text="X: 0.00 m Y: 0.00 m" />
+                <Label fx:id="panLabel" text="Pan: 0.00°" />
+                <Label fx:id="tiltLabel" text="Tilt: 0.00°" />
 
-    <Label fx:id="connectionLabel" text="DISCONNECTED" alignment="CENTER"
-           prefWidth="160.0" prefHeight="40.0"
-           AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="200.0"
-           style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-font-size: 14px;"/>
+                <Label text="Ammunition" style="-fx-text-fill: #607080;" />
+                <TextField fx:id="ammunitionField" editable="false" text="0 × N/A" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: transparent; -fx-border-color: transparent;" />
 
-    <VBox spacing="10.0" prefWidth="240.0"
-          AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="280.0"
-          style="-fx-background-color: #636573; -fx-padding: 20; -fx-background-radius: 4;">
+                <HBox spacing="12">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Alignment" style="-fx-text-fill: #607080;" />
+                        <Label fx:id="aimLabel" text="ALIGNING" style="-fx-font-weight: bold;" />
+                    </VBox>
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Fire Safety" style="-fx-text-fill: #607080;" />
+                        <Label fx:id="readyLabel" text="SAFETY LOCKED" style="-fx-font-weight: bold;" />
+                    </VBox>
+                </HBox>
+                <Canvas fx:id="compassCanvas" width="300" height="270" VBox.vgrow="ALWAYS" />
+            </VBox>
 
-        <Label text="TARGETING PARAMETERS" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <VBox spacing="12" GridPane.columnIndex="1"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 18; -fx-border-color: #d9e0e6; -fx-border-radius: 8;">
+                <Label text="Target and Fire Control" style="-fx-font-size: 17px; -fx-font-weight: bold;" />
+                <Separator />
+                <Label text="Target coordinates use simulation world coordinates (meters)." wrapText="true"
+                       style="-fx-text-fill: #607080;" />
+                <GridPane hgap="10" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="75" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
 
-        <Label text="Target X Coordinate" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <TextField fx:id="targetXField" alignment="CENTER" promptText="0.00" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+                    <Label text="Target X" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                    <TextField fx:id="targetXField" promptText="e.g. -250.0" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-        <Label text="Target Y Coordinate" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <TextField fx:id="targetYField" alignment="CENTER" promptText="0.00" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+                    <Label text="Target Y" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                    <TextField fx:id="targetYField" promptText="e.g. 220.0" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-        <Label text="AMMUNITION" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <TextField fx:id="ammunitionField" alignment="CENTER" editable="false" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+                    <Label text="Target Z" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                    <TextField fx:id="targetZField" promptText="leave blank for 0.0" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
-        <Button text="SET TARGET" onAction="#onSetTargetButtonClick"
-                style="-fx-background-color: #8e7cc3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    <Label text="Ball Type" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                    <ComboBox fx:id="ballTypeField" promptText="Select Ball Type" GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
+                </GridPane>
 
-        <Label text="BALL TYPE" maxWidth="Infinity" alignment="CENTER" style="-fx-text-fill: #dcdcdc; -fx-font-size: 12px;"/>
-        <ComboBox fx:id="ballTypeField" promptText="Select Ball Type"
-                  maxWidth="Infinity"
-                  style="-fx-background-color: #e2e2e2; -fx-font-weight: bold;"/>
-    </VBox>
+                <!-- Buton metodları senin HelloController'a göre düzeltildi -->
+                <Button text="SET TARGET" onAction="#onSetTargetButtonClick" maxWidth="Infinity"
+                        style="-fx-background-color: #2878b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;" />
 
-    <Canvas fx:id="compassCanvas" width="260.0" height="260.0"
-            AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="280.0"/>
+                <Button text="USE SIMULATION TARGET STREAM" onAction="#onUseTrackedTarget" maxWidth="Infinity" />
 
-    <VBox spacing="20.0" prefWidth="180.0"
-          AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="600.0">
-        <Button text="STOW" onAction="#onStowButtonClick"
-                prefWidth="180.0" prefHeight="45.0"
-                style="-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 4; -fx-alignment: center;"/>
+                <Label text="A fire request does not fire immediately. The backend fires only after verifying target alignment, simulation readiness, gun status, and ammunition."
+                       wrapText="true" style="-fx-text-fill: #607080;" />
 
-        <Button text="FIRE" onAction="#onFireButtonClick"
-                prefWidth="180.0" prefHeight="45.0"
-                style="-fx-background-color: #d96b38; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 4; -fx-alignment: center;"/>
-    </VBox>
+                <Button fx:id="fireButton" text="SEND FIRE REQUEST" onAction="#onFireButtonClick" maxWidth="Infinity" disable="true"
+                        style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 14;" />
 
-    <Button text="EMERGENCY&#10;STOP" onAction="#onEmergencyStopButtonClick" textAlignment="CENTER"
-            prefWidth="200.0" prefHeight="80.0"
-            AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="650.0"
-            style="-fx-background-color: #d93838; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 4; -fx-alignment: center;"/>
+                <Button text="STOW POSITION" onAction="#onStowButtonClick" maxWidth="Infinity" />
+                <Separator />
 
-    <TextArea fx:id="reportsArea" editable="false" visible="false"
-              prefWidth="640.0" prefHeight="120.0"
-              AnchorPane.leftAnchor="50.0" AnchorPane.TopAnchor="725.0"
-              style="-fx-control-inner-background: #1e1e26; -fx-text-fill: white;"/>
+                <Button text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick" maxWidth="Infinity"
+                        style="-fx-background-color: #7e1111; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;" />
 
-</AnchorPane>
+                <Button text="CLEAR EMERGENCY STOP" onAction="#onClearEmergencyStop" maxWidth="Infinity" />
 
+                <Label fx:id="statusMessageLabel" text="Starting..." wrapText="true"
+                       style="-fx-background-color: #eef2f5; -fx-padding: 10; -fx-background-radius: 5;" />
+            </VBox>
 
+            <VBox spacing="12" GridPane.columnIndex="2"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 18; -fx-border-color: #d9e0e6; -fx-border-radius: 8;">
+                <Label text="System Reports" style="-fx-font-size: 17px; -fx-font-weight: bold;" />
+                <Separator />
+                <TextArea fx:id="reportsArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
+                          promptText="Simulation and gun fault reports appear here." style="-fx-control-inner-background: #1e1e26; -fx-text-fill: white;" />
+            </VBox>
+        </GridPane>
+    </center>
 
-
+    <bottom>
+        <Label text="Phone control remains available as a separate manual/test tool for ship and target movement. Do not let two sources publish gun-rate or fire commands at the same time."
+               wrapText="true" style="-fx-background-color: #e7edf2; -fx-padding: 10 18 10 18; -fx-text-fill: #405160;"
+               BorderPane.alignment="CENTER_LEFT" />
+    </bottom>
+</BorderPane>
 
