@@ -127,6 +127,13 @@ public class SystemStatus {
         this.ammoType = ammoType;
     }
 
+    public void ammoCounter(){
+        if(this.ammoCount >0 ){
+            this.ammoCount--;
+        }
+        this.readyToFire = evaluateReadyToFire();
+    }
+
     public String getReportMessage() {
         return reportMessage;
     }
