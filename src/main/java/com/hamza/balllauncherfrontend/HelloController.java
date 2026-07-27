@@ -11,17 +11,16 @@ import javafx.application.Platform;
 import javafx.animation.PauseTransition;
 import javafx.scene.control.ComboBox;
 import javafx.util.Duration;
-import javafx.beans.InvalidationListener;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javafx.scene.text.FontWeight;
 
 import java.time.LocalTime;
 
@@ -29,14 +28,24 @@ public class HelloController {
 
     private static final Logger logger = LoggerFactory.getLogger(HelloController.class);
 
-    @FXML private TextField targetXField;
-    @FXML private TextField targetYField;
-    @FXML private TextField ammunitionField;
-    @FXML private ComboBox<String> ballTypeField;
     @FXML private Label connectionLabel;
     @FXML private Label readyLabel;
-    @FXML private Canvas compassCanvas;
+
+    @FXML private Label availabilityLabel;
+    @FXML private Label coordinatesLabel;
+    @FXML private Label panLabel;
+    @FXML private Label tiltLabel;
+    @FXML private Label ammoLabel;
+    @FXML private Label aimLabel;
+    @FXML private Label statusMessageLabel;
+
+    @FXML private TextField targetXField;
+    @FXML private TextField targetYField;
+    @FXML private TextField targetZField;
+    @FXML private ComboBox<String> ballTypeField;
     @FXML private TextArea reportsArea;
+    @FXML private Canvas compassCanvas;
+    @FXML private Button fireButton;
 
     private CommandProducer producer;
     private SystemStatusConsumer consumer;
@@ -54,7 +63,7 @@ public class HelloController {
         String kafkaBootstrapServers = AppConfig.getKafkaBootstrapServers();
 
         producer = new CommandProducer(kafkaBootstrapServers);
-        logger.info("Kafka producer is ready.");
+        logger.info("Kafka producer is ready on: {}", kafkaBootstrapServers);
 
         consumer = new SystemStatusConsumer(kafkaBootstrapServers, "frontend-group", status -> {
             Platform.runLater(() -> {
@@ -69,12 +78,25 @@ public class HelloController {
                         ? "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;"
                         : "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
 
+
+                if (availabilityLabel != null) availabilityLabel.setText(status.getAvailability() != null ? status.getAvailability() : "UNKNOWN");
+                if (coordinatesLabel != null) coordinatesLabel.setText(String.format("X: %.2f m Y: %.2f m", status.getXCoordinate(), status.getYCoordinate()));
+                if (panLabel != null) panLabel.setText(String.format("Pan: %.2f°", status.getPlatformAngle()));
+                if (tiltLabel != null) tiltLabel.setText(String.format("Tilt: %.2f°", status.getCannonAngle()));
+                if (ammoLabel != null) ammoLabel.setText(String.format("%d", status.getAmmoCount()));
+
+                if (aimLabel != null) {
+                    aimLabel.setText(status.isAimed() ? "ALIGNED" : "ALIGNING");
+                    aimLabel.setTextFill(status.isAimed() ? Color.FORESTGREEN : Color.DARKORANGE);
+                }
+
+                if (fireButton != null) {
+                    fireButton.setDisable(!status.isConnected());
+                }
+
                 currentPlatformAngle = status.getPlatformAngle();
                 currentCannonAngle = status.getCannonAngle();
                 drawCompass();
-
-                ammunitionField.setText(String.valueOf(status.getAmmoCount()));
-
             });
         });
 
@@ -166,7 +188,7 @@ public class HelloController {
 
     private void drawNeedle(GraphicsContext gc, double cx, double cy, double radius, double angleDegrees, Color color, double lineWidth) {
         double rad = Math.toRadians(angleDegrees - 90);
-        double x = cx + radius * 0.68* Math.cos(rad);
+        double x = cx + radius * 0.68 * Math.cos(rad);
         double y = cy + radius * 0.68 * Math.sin(rad);
 
         gc.setStroke(color);
@@ -201,6 +223,7 @@ public class HelloController {
     protected void onFireButtonClick() {
         if ("NOT READY".equals(readyLabel.getText())) {
             logger.warn("System is NOT READY. Fire command ignored.");
+            setUiMessage("System is not ready to fire!", true);
             return;
         }
 
@@ -214,6 +237,7 @@ public class HelloController {
             producer.sendCommand(new LaunchCommand(LauncherAction.FIRE, telemetry));
 
             logger.info("Telemetry and FIRE command sent for X:{} Y:{}", x, y);
+            setUiMessage("Fire command queued successfully.", false);
 
             readyLabel.setText("NOT READY");
             readyLabel.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 8 20; -fx-font-weight: bold;");
@@ -232,6 +256,7 @@ public class HelloController {
 
         } catch (NumberFormatException e) {
             logger.warn("Invalid X or Y value entered.");
+            setUiMessage("Invalid coordinates entered!", true);
         }
     }
 
@@ -239,12 +264,27 @@ public class HelloController {
     protected void onStowButtonClick() {
         producer.sendCommand(new LaunchCommand(LauncherAction.STOW, null));
         logger.info("STOW command sent.");
+        setUiMessage("Stow command sent.", false);
     }
 
     @FXML
     protected void onEmergencyStopButtonClick() {
         producer.sendCommand(new LaunchCommand(LauncherAction.EMERGENCY_STOP, null));
         logger.warn("EMERGENCY STOP command sent!");
+        setUiMessage("EMERGENCY STOP ENGAGED!", true);
+    }
+@FXML
+    protected void onClearEmergencyStop() {
+        producer.sendCommand(new LaunchCommand(LauncherAction.EMERGENCY_STOP, null));
+        logger.info("Emergency stop clear command sent.");
+        setUiMessage("Emergency stop cleared.", false);
+    }
+
+    @FXML
+    protected void onUseTrackedTarget() {
+        producer.sendCommand(new LaunchCommand(LauncherAction.USE_TRACKED_TARGET, null));
+        logger.info("Simulation target stream selected.");
+        setUiMessage("Using tracked simulation targets.", false);
     }
 
     @FXML
@@ -252,6 +292,7 @@ public class HelloController {
         reportsArea.setVisible(!reportsArea.isVisible());
         logger.info("Reports panel toggled.");
     }
+
     @FXML
     protected void onSetTargetButtonClick() {
         try {
@@ -264,8 +305,19 @@ public class HelloController {
             producer.sendCommand(new LaunchCommand(LauncherAction.SET_MANUAL_TARGET, telemetry));
 
             logger.info("SET_MANUAL_TARGET command sent for X:{} Y:{}", x, y);
+            setUiMessage("Target manually set.", false);
         } catch (NumberFormatException e) {
             logger.warn("Invalid X or Y value entered.");
+            setUiMessage("Invalid coordinates entered!", true);
+        }
+    }
+
+    private void setUiMessage(String message, boolean isError) {
+        if (statusMessageLabel != null) {
+            Platform.runLater(() -> {
+                statusMessageLabel.setText(message);
+                statusMessageLabel.setTextFill(isError ? Color.FIREBRICK : Color.DARKSLATEGRAY);
+            });
         }
     }
 
@@ -276,5 +328,4 @@ public class HelloController {
         logger.info("Kafka connections closed safely.");
     }
 }
-
 
