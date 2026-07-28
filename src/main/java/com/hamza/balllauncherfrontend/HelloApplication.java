@@ -14,13 +14,13 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
 
-        Scene scene = new Scene(loader.load(), 1180, 760);
+        Scene scene = new Scene(loader.load(), 780, 960);
 
         controller = loader.getController();
 
         stage.setTitle("Ball Launcher Control Panel");
-        stage.setMinWidth(1000);
-        stage.setMinHeight(680);
+        stage.setMinWidth(760);
+        stage.setMinHeight(820);
         stage.setScene(scene);
         stage.show();
     }
