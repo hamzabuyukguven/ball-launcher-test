@@ -1,0 +1,637 @@
+package com.launcher.simulationtest;
+
+import com.heybeliada.grpc.CommandReply;
+import com.launcher.config.AppConfig;
+import com.launcher.control.PIDController;
+import com.launcher.grpc.NavalBridgeGrpcClient;
+import com.launcher.kafka.model.LauncherTelemetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class LauncherControlService {
+    private static final Logger logger = LoggerFactory.getLogger(LauncherControlService.class);
+
+    private enum Mode { IDLE, TRACKING, STOW, EMERGENCY_STOP }
+    private enum TargetSource { TRACKED, MANUAL, NONE }
+
+    private final NavalBridgeGrpcClient grpcClient;
+    private final PIDController panPid;
+    private final PIDController tiltPid;
+    private final boolean backendControlEnabled;
+    private final double controlRateHz;
+    private final double muzzleVelocity;
+    private final long fireRetryIntervalMillis;
+    private final double aimToleranceRad;
+    private final AtomicInteger ammoCount;
+    private final String ammoType;
+
+    private final ScheduledExecutorService controlExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "gun-control-loop");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private volatile Mode mode = Mode.IDLE;
+    private volatile boolean started;
+    private volatile boolean pendingFire;
+    private volatile long lastFireAttemptMillis;
+    private volatile boolean gunReady;
+    private volatile boolean gunFiring;
+    private volatile boolean gunFault;
+    private volatile boolean simulationReady;
+
+    private volatile double currentPanRad;
+    private volatile double currentTiltRad;
+    private volatile double ownshipX;
+    private volatile double ownshipY;
+    private volatile double ownshipZ;
+    private volatile double ownshipYawRad;
+    private volatile boolean ownshipPoseAvailable;
+
+    private volatile double targetX;
+    private volatile double targetY;
+    private volatile double targetZ;
+    private volatile boolean targetAvailable;
+    private volatile TargetSource targetSource = TargetSource.TRACKED;
+
+    private volatile double trackedTargetX;
+    private volatile double trackedTargetY;
+    private volatile double trackedTargetZ;
+    private volatile boolean trackedTargetAvailable;
+
+    private volatile double targetPanRad;
+    private volatile double targetTiltRad;
+    private volatile double lastPanErrorRad = Double.POSITIVE_INFINITY;
+    private volatile double lastTiltErrorRad = Double.POSITIVE_INFINITY;
+    private volatile long lastControlDiagnosticMillis;
+    private volatile long lastControlErrorMillis;
+
+    public LauncherControlService(NavalBridgeGrpcClient grpcClient, AppConfig config) {
+        this.grpcClient = grpcClient;
+        this.backendControlEnabled = config.isBackendControlEnabled();
+        this.controlRateHz = config.getControlRateHz();
+        this.muzzleVelocity = config.getMuzzleVelocity();
+        this.fireRetryIntervalMillis = config.getFireRetryIntervalMillis();
+        this.aimToleranceRad = config.getAimToleranceRad();
+        this.ammoCount = new AtomicInteger(config.getInitialAmmoCount());
+        this.ammoType = config.getAmmoType();
+
+        this.panPid = new PIDController(
+                config.getPanKp(), config.getPanKi(), config.getPanKd(),
+                -config.getMaxPanRate(), config.getMaxPanRate());
+        this.tiltPid = new PIDController(
+                config.getTiltKp(), config.getTiltKi(), config.getTiltKd(),
+                -config.getMaxTiltRate(), config.getMaxTiltRate());
+    }
+
+    public synchronized void start() {
+        if (started) {
+            return;
+        }
+        started = true;
+        long periodNanos = Math.max(1L, Math.round(1_000_000_000.0 / controlRateHz));
+        controlExecutor.scheduleAtFixedRate(
+                this::controlStepSafely,
+                0L,
+                periodNanos,
+                TimeUnit.NANOSECONDS
+        );
+        logger.info("Gun control loop started at {} Hz (backend control enabled={})",
+                controlRateHz, backendControlEnabled);
+    }
+
+    public synchronized void stop() {
+        if (!started) {
+            return;
+        }
+        started = false;
+        pendingFire = false;
+        if (backendControlEnabled) {
+            try {
+                grpcClient.sendGunRateCommand(0.0, 0.0, false);
+            } catch (Exception ignored) {
+                // Shutdown should continue even when the simulator is already gone.
+            }
+        }
+        controlExecutor.shutdownNow();
+        logger.info("Gun control loop stopped");
+    }
+
+    private void controlStepSafely() {
+        try {
+            controlStep();
+        } catch (Throwable error) {
+            long now = System.currentTimeMillis();
+
+            if (now - lastControlErrorMillis >= 1000L) {
+                lastControlErrorMillis = now;
+                logger.error("Control loop step failed", error);
+            }
+        }
+    }
+
+    private void controlStep() {
+        if (!started
+                || !backendControlEnabled
+                || mode == Mode.EMERGENCY_STOP) {
+            return;
+        }
+
+        if (mode == Mode.IDLE
+                || (!targetAvailable && mode != Mode.STOW)) {
+            return;
+        }
+
+        if (mode == Mode.STOW) {
+            targetPanRad = 0.0;
+            targetTiltRad = 0.0;
+        } else {
+            calculateTargetAngles();
+        }
+
+        double dt = 1.0 / controlRateHz;
+
+        double panError =
+                normalizeAngle(targetPanRad - currentPanRad);
+
+        double tiltError =
+                targetTiltRad - currentTiltRad;
+
+        lastPanErrorRad = panError;
+        lastTiltErrorRad = tiltError;
+
+        boolean aimed =
+                Math.abs(panError) <= aimToleranceRad
+                && Math.abs(tiltError) <= aimToleranceRad;
+
+        double panRate = 0.0;
+        double tiltRate = 0.0;
+
+        if (aimed) {
+            panPid.reset();
+            tiltPid.reset();
+        } else {
+            panRate = panPid.calculate(
+                    0.0,
+                    -panError,
+                    dt
+            );
+
+            tiltRate = tiltPid.calculate(
+                    0.0,
+                    -tiltError,
+                    dt
+            );
+        }
+
+        long now = System.currentTimeMillis();
+
+        if (now - lastControlDiagnosticMillis >= 1000L) {
+            lastControlDiagnosticMillis = now;
+
+            logger.info(
+                    "Control state: mode={}, targetAvailable={}, "
+                    + "targetPan={}, targetTilt={}, "
+                    + "currentPan={}, currentTilt={}, "
+                    + "panRate={}, tiltRate={}, aimed={}",
+                    mode,
+                    targetAvailable,
+                    targetPanRad,
+                    targetTiltRad,
+                    currentPanRad,
+                    currentTiltRad,
+                    panRate,
+                    tiltRate,
+                    aimed
+            );
+        }
+
+        CommandReply rateReply =
+                grpcClient.sendGunRateCommand(
+                        panRate,
+                        tiltRate,
+                        true
+                );
+
+        if (rateReply == null) {
+            return;
+        }
+
+        if (!rateReply.getAccepted()) {
+            logger.warn(
+                    "Simulation rejected gun-rate command: {}",
+                    rateReply.getMessage()
+            );
+            return;
+        }
+
+        if (aimed) {
+            if (mode == Mode.STOW) {
+                mode = Mode.IDLE;
+                targetAvailable = false;
+                logger.info("STOW position reached");
+            }
+
+            fireWhenSafe();
+        }
+    }
+
+    private void calculateTargetAngles() {
+        /*
+         * Active Heybeliada model geometry:
+         *
+         * ship_link -> pan_link:
+         *   x = 31.057680 m, z = 6.183503 m
+         *
+         * pan_link -> tilt_link:
+         *   x = 0.113315 m, z = 1.351354 m
+         *
+         * tilt_link -> muzzle_link:
+         *   x = 5.35 m
+         */
+        final double turretPivotForwardOffset =
+                31.057680 + 0.113315;
+
+        final double turretPivotHeightOffset =
+                6.183503 + 1.351354;
+
+        final double barrelLength = 5.35;
+        final double minimumDistance = 1e-6;
+
+        double turretWorldX = 0.0;
+        double turretWorldY = 0.0;
+        double turretWorldZ = 0.0;
+
+        if (ownshipPoseAvailable) {
+            double cosYaw = Math.cos(ownshipYawRad);
+            double sinYaw = Math.sin(ownshipYawRad);
+
+            turretWorldX =
+                    ownshipX
+                    + turretPivotForwardOffset * cosYaw;
+
+            turretWorldY =
+                    ownshipY
+                    + turretPivotForwardOffset * sinYaw;
+
+            turretWorldZ =
+                    ownshipZ
+                    + turretPivotHeightOffset;
+        }
+
+        double dx;
+        double dy;
+        double horizontalDistanceToPivot;
+
+        if (ownshipPoseAvailable) {
+            dx = targetX - turretWorldX;
+            dy = targetY - turretWorldY;
+
+            horizontalDistanceToPivot =
+                    Math.hypot(dx, dy);
+
+            targetPanRad = normalizeAngle(
+                    Math.atan2(dy, dx)
+                    - ownshipYawRad
+            );
+        } else {
+            /*
+             * Preserve relative-target fallback behaviour when platform
+             * telemetry has not become available yet.
+             */
+            dx = targetX;
+            dy = targetY;
+
+            horizontalDistanceToPivot =
+                    Math.hypot(dx, dy);
+
+            targetPanRad = normalizeAngle(
+                    Math.atan2(dy, dx)
+            );
+
+            turretWorldZ = 0.0;
+        }
+
+        /*
+         * The muzzle position depends on tilt because the muzzle_link is
+         * located at the end of the 5.35 m barrel. Iterate a few times to
+         * solve the launch angle and muzzle position consistently.
+         */
+        double estimatedTilt = Math.atan2(
+                targetZ - turretWorldZ,
+                Math.max(
+                        horizontalDistanceToPivot - barrelLength,
+                        minimumDistance
+                )
+        );
+
+        for (int iteration = 0; iteration < 5; iteration++) {
+            double muzzleHorizontalOffset =
+                    barrelLength * Math.cos(estimatedTilt);
+
+            double muzzleVerticalOffset =
+                    barrelLength * Math.sin(estimatedTilt);
+
+            double horizontalDistanceFromMuzzle =
+                    Math.max(
+                            horizontalDistanceToPivot
+                            - muzzleHorizontalOffset,
+                            minimumDistance
+                    );
+
+            double muzzleWorldZ =
+                    turretWorldZ
+                    + muzzleVerticalOffset;
+
+            double heightDifferenceFromMuzzle =
+                    targetZ
+                    - muzzleWorldZ;
+
+            double nextTilt = calculateBallisticTilt(
+                    horizontalDistanceFromMuzzle,
+                    heightDifferenceFromMuzzle,
+                    muzzleVelocity
+            );
+
+            if (!Double.isFinite(nextTilt)) {
+                break;
+            }
+
+            estimatedTilt = nextTilt;
+        }
+
+        /*
+         * Small simulation calibration: raise the barrel by 0.05 degrees
+         * to compensate for the projectile landing slightly short.
+         */
+        final double ballisticCalibrationOffsetRad =
+                Math.toRadians(0.08);
+
+        targetTiltRad =
+                estimatedTilt
+                + ballisticCalibrationOffsetRad;
+    }
+
+    private static double calculateBallisticTilt(
+            double horizontalDistance,
+            double heightDifference,
+            double muzzleVelocity) {
+
+        final double gravity = 9.80665;
+        final double minimumDistance = 1e-6;
+
+        double distance = Math.max(
+                horizontalDistance,
+                minimumDistance
+        );
+
+        double lineOfSightTilt = Math.atan2(
+                heightDifference,
+                distance
+        );
+
+        if (!Double.isFinite(muzzleVelocity)
+                || muzzleVelocity <= 0.0
+                || horizontalDistance < minimumDistance) {
+            return lineOfSightTilt;
+        }
+
+        double velocitySquared =
+                muzzleVelocity * muzzleVelocity;
+
+        double discriminant =
+                velocitySquared * velocitySquared
+                - gravity * (
+                    gravity * distance * distance
+                    + 2.0
+                    * heightDifference
+                    * velocitySquared
+                );
+
+        /*
+         * A negative discriminant means that the target cannot be reached
+         * with the configured muzzle velocity in the ideal ballistic model.
+         * Keep the previous line-of-sight behaviour as a safe fallback.
+         */
+        if (!Double.isFinite(discriminant)
+                || discriminant < 0.0) {
+            return lineOfSightTilt;
+        }
+
+        double tangent =
+                (
+                    velocitySquared
+                    - Math.sqrt(discriminant)
+                )
+                / (gravity * distance);
+
+        double ballisticTilt = Math.atan(tangent);
+
+        return Double.isFinite(ballisticTilt)
+                ? ballisticTilt
+                : lineOfSightTilt;
+    }
+
+    private void fireWhenSafe() {
+        if (!pendingFire || gunFiring) {
+            return;
+        }
+        if (!simulationReady || gunFiring || gunFault) {
+            return;
+        }
+        if (ammoCount.get() <= 0) {
+            pendingFire = false;
+            logger.warn("Fire request rejected: no ammunition remaining");
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - lastFireAttemptMillis < fireRetryIntervalMillis) {
+            return;
+        }
+        lastFireAttemptMillis = now;
+
+        CommandReply reply = grpcClient.sendFireCommand(muzzleVelocity);
+        if (reply != null && reply.getAccepted()) {
+            pendingFire = false;
+            int remaining = ammoCount.decrementAndGet();
+            logger.info("Fire accepted by simulation. Remaining ammo: {}", remaining);
+        } else {
+            String message = reply == null ? "no reply" : reply.getMessage();
+            logger.warn("Simulation rejected fire request: {}", message);
+        }
+    }
+
+    public void updateCurrentAngles(double panRad, double tiltRad) {
+        this.currentPanRad = panRad;
+        this.currentTiltRad = tiltRad;
+    }
+
+    public void updatePlatformPosition(double x, double y, double z) {
+        this.ownshipX = x;
+        this.ownshipY = y;
+        this.ownshipZ = z;
+        this.ownshipPoseAvailable = true;
+    }
+
+    public void updatePlatformOrientation(double yawRad) {
+        this.ownshipYawRad = yawRad;
+    }
+
+    public synchronized void updateTrackedTarget(double x, double y, double z) {
+        trackedTargetX = x;
+        trackedTargetY = y;
+        trackedTargetZ = z;
+        trackedTargetAvailable = true;
+
+        if (targetSource == TargetSource.TRACKED) {
+            setTargetInternal(x, y, z);
+        }
+    }
+
+    public synchronized void setManualTarget(double x, double y, double z) {
+        targetSource = TargetSource.MANUAL;
+        panPid.reset();
+        tiltPid.reset();
+        setTargetInternal(x, y, z);
+        logger.info("Manual target set: x={}, y={}, z={}", x, y, z);
+        logger.info(
+                "Immediate control invocation: started={}, enabled={}, "
+                + "mode={}, targetAvailable={}",
+                started,
+                backendControlEnabled,
+                mode,
+                targetAvailable
+        );
+        controlStepSafely();
+    }
+
+    public synchronized void useTrackedTarget() {
+        targetSource = TargetSource.TRACKED;
+        panPid.reset();
+        tiltPid.reset();
+        if (trackedTargetAvailable) {
+            setTargetInternal(trackedTargetX, trackedTargetY, trackedTargetZ);
+            logger.info("Simulation tracked-target source enabled");
+        } else {
+            targetAvailable = false;
+            mode = Mode.IDLE;
+            logger.warn("Tracked-target source selected, but no target stream data is available yet");
+        }
+    }
+
+    private void setTargetInternal(double x, double y, double z) {
+        targetX = x;
+        targetY = y;
+        targetZ = z;
+        targetAvailable = true;
+        if (mode != Mode.EMERGENCY_STOP) {
+            mode = Mode.TRACKING;
+        }
+    }
+
+    public void processTargetTelemetry(LauncherTelemetry target) {
+        if (target != null) {
+            setManualTarget(target.getTargetX(), target.getTargetY(), target.getTargetZ());
+        }
+    }
+
+    public void requestFire(LauncherTelemetry target) {
+        if (!backendControlEnabled) {
+            logger.warn("Fire request ignored because backend gun control is disabled");
+            return;
+        }
+        if (target != null) {
+            processTargetTelemetry(target);
+        } else if (!targetAvailable && targetSource == TargetSource.TRACKED && trackedTargetAvailable) {
+            setTargetInternal(trackedTargetX, trackedTargetY, trackedTargetZ);
+        }
+        if (mode == Mode.EMERGENCY_STOP) {
+            logger.warn("Fire request ignored while emergency stop is active");
+            return;
+        }
+        if (!targetAvailable) {
+            logger.warn("Fire request ignored because no active target is available");
+            return;
+        }
+        pendingFire = true;
+        logger.info("Fire queued; shot will be sent only after aim and readiness checks pass");
+    }
+
+    public void fire() {
+        requestFire(null);
+    }
+
+    public void emergencyStop() {
+        pendingFire = false;
+        mode = Mode.EMERGENCY_STOP;
+        panPid.reset();
+        tiltPid.reset();
+        grpcClient.sendGunRateCommand(0.0, 0.0, false);
+        logger.warn("EMERGENCY STOP activated");
+    }
+
+    public void clearEmergencyStop() {
+        mode = targetAvailable ? Mode.TRACKING : Mode.IDLE;
+        logger.info("Emergency stop cleared");
+    }
+
+    public void moveToStowPosition() {
+        pendingFire = false;
+        targetSource = TargetSource.NONE;
+        targetAvailable = false;
+        mode = Mode.STOW;
+        panPid.reset();
+        tiltPid.reset();
+        logger.info("Moving gun to STOW position");
+    }
+
+    public void updateGunStatus(boolean readyToFire, boolean firing, boolean fault) {
+        this.gunReady = readyToFire;
+        this.gunFiring = firing;
+        this.gunFault = fault;
+    }
+
+    public void updateSimulationReady(boolean simulationReady) {
+        this.simulationReady = simulationReady;
+    }
+
+    public boolean isTargetAimed() {
+        return targetAvailable
+                && Math.abs(lastPanErrorRad) <= aimToleranceRad
+                && Math.abs(lastTiltErrorRad) <= aimToleranceRad;
+    }
+
+    public boolean isReadyToFire() {
+        return backendControlEnabled && simulationReady && !gunFiring && !gunFault
+                && isTargetAimed() && ammoCount.get() > 0;
+    }
+
+    public boolean isPendingFire() { return pendingFire; }
+    public boolean isGunFiring() { return gunFiring; }
+    public boolean isGunFault() { return gunFault; }
+    public int getAmmoCount() { return ammoCount.get(); }
+    public String getAmmoType() { return ammoType; }
+
+    public String getAvailability() {
+        if (!backendControlEnabled) return "MANUAL_CONTROL";
+        if (mode == Mode.EMERGENCY_STOP) return "EMERGENCY_STOP";
+        if (gunFault) return "FAULT";
+        if (gunFiring) return "FIRING";
+        if (!simulationReady) return "DISCONNECTED";
+        if (isReadyToFire()) return "READY";
+        if (targetAvailable || mode == Mode.STOW) return "TRACKING";
+        return "IDLE";
+    }
+
+    private static double normalizeAngle(double angle) {
+        while (angle > Math.PI) angle -= 2.0 * Math.PI;
+        while (angle < -Math.PI) angle += 2.0 * Math.PI;
+        return angle;
+    }
+}
