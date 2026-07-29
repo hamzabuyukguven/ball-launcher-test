@@ -122,5 +122,14 @@ public class SystemStatus {
     }
     public void setElevationAngle() {this.elevationAngle = elevationAngle;}
 
+    private double muzzleVelocity;
+
+    public double getMuzzleVelocity(){
+        return muzzleVelocity;
+    }
+    public void setMuzzleVelocity(double muzzleVelocity) {
+        this.muzzleVelocity = muzzleVelocity;
+    }
+
 }
 
