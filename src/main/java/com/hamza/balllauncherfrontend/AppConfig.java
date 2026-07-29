@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public final class AppConfig {
+
     private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
     private static final Properties PROPERTIES = new Properties();
 
@@ -44,6 +47,35 @@ public final class AppConfig {
         }
     }
 
+    public static double getDefaultMuzzleVelocity() {
+        try {
+            return Double.parseDouble(PROPERTIES.getProperty("ballistics.muzzle.velocity", "60.0"));
+        } catch (NumberFormatException e) {
+            return 60.0;
+        }
+    }
+
+    public static List<double[]> getForbiddenSectors() {
+        List<double[]> sectors = new ArrayList<>();
+        String raw = value("forbidden.sectors", "FORBIDDEN_SECTORS", "");
+        if (raw.isBlank()) return sectors;
+
+        for (String part : raw.split(",")) {
+            String[] bounds = part.trim().split(":");
+            if (bounds.length != 2) {
+                logger.warn("Invalid forbidden sector definition: {}", part);
+                continue;
+            }
+            try {
+                double start = Double.parseDouble(bounds[0].trim());
+                double end = Double.parseDouble(bounds[1].trim());
+                sectors.add(new double[]{start, end});
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid forbidden sector numbers: {}", part);
+            }
+        }
+        return sectors;
+    }
 
     public static String commandTopic() {
         return value("kafka.command.topic", "KAFKA_COMMAND_TOPIC", "launcher.commands");
@@ -69,4 +101,3 @@ public final class AppConfig {
         return value("kafka.reports.group.id", "KAFKA_REPORTS_GROUP_ID", "launcher-frontend-reports");
     }
 }
-
