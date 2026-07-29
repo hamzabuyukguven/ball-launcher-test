@@ -17,7 +17,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.hamza.balllauncherfrontend.HelloController"
-            prefWidth="820" prefHeight="1000"
+            prefWidth="820" prefHeight="1020"
             style="-fx-background-color: #23252e;">
 
     <top>
@@ -68,19 +68,17 @@
                     <Separator style="-fx-background-color: #3f434f;"/>
 
                     <Label text="MANUAL TARGETING" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
-                    <Label text="Ownship is the origin (0, 0). Enter the target offset relative to ownship."
-                           wrapText="true" style="-fx-text-fill: #7f899a; -fx-font-size: 11px;"/>
 
                     <GridPane hgap="10" vgap="10">
                         <columnConstraints>
-                            <ColumnConstraints minWidth="110"/>
+                            <ColumnConstraints minWidth="115"/>
                             <ColumnConstraints minWidth="140" maxWidth="140"/>
                         </columnConstraints>
-                        <Label text="Target X (m)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <TextField fx:id="targetXField" promptText="-250.0" prefWidth="140"
+                        <Label text="Latitude (kn)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="latitudeField" promptText="0.10" prefWidth="140"
                                    GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                        <Label text="Target Y (m)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <TextField fx:id="targetYField" promptText="220.0" prefWidth="140"
+                        <Label text="Longitude (kn)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="longitudeField" promptText="0.05" prefWidth="140"
                                    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                         <Label text="Ball Type" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                         <ComboBox fx:id="ballTypeField" promptText="Select" prefWidth="140"
@@ -91,24 +89,25 @@
                             style="-fx-background-color: #2878b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
 
                     <Separator style="-fx-background-color: #3f434f;"/>
-                    <Label text="AUTOMATIC TRACKING" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label text="FIRING SOLUTION" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
 
-                    <Button text="USE TRACKED TARGET" onAction="#onUseTrackedTarget" maxWidth="Infinity"
-                            style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-padding: 9;"/>
+                    <TextArea fx:id="solutionArea" editable="false" wrapText="false" prefHeight="118"
+                              promptText="Run ballistic calculation to generate a firing solution."
+                              style="-fx-control-inner-background: #1a1c23; -fx-text-fill: #9fe1cb; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
 
-                    <Button fx:id="autoFireButton" text="FIRE ON TRACK" onAction="#onAutoFireButtonClick"
+                    <Button text="BALLISTIC CALCULATION" onAction="#onBallisticCalculationClick" maxWidth="Infinity"
+                            style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 9;"/>
+
+                    <Button fx:id="slewButton" text="SLEW TO TARGET" onAction="#onSlewToTargetClick"
                             maxWidth="Infinity" disable="true"
                             style="-fx-background-color: #8c5a1f; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
-
-                    <Label text="Enabled only while the tracker reports ALIGNED."
-                           wrapText="true" style="-fx-text-fill: #7f899a; -fx-font-size: 11px;"/>
 
                     <Region VBox.vgrow="ALWAYS"/>
                 </VBox>
 
                 <VBox spacing="8" alignment="CENTER" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
                       style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 16;">
-                    <Label text="OWNSHIP AND GUN ATTITUDE" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
+                    <Label text="BARREL" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
                     <Separator style="-fx-background-color: #3f434f;"/>
 
                     <HBox spacing="6" alignment="CENTER">
@@ -126,12 +125,17 @@
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Region prefWidth="24" prefHeight="2" minHeight="2" maxHeight="2"
                                     style="-fx-background-color: #c0392b;"/>
-                            <Label text="Gun bearing (X axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                            <Label text="Barrel bearing (X axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
                         </HBox>
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Region prefWidth="24" prefHeight="2" minHeight="2" maxHeight="2"
                                     style="-fx-background-color: #d98324;"/>
-                            <Label text="Gun elevation (Y axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                            <Label text="Barrel elevation (Y axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Region prefWidth="24" prefHeight="10" minHeight="10" maxHeight="10"
+                                    style="-fx-background-color: #6b2222;"/>
+                            <Label text="Forbidden sector" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
                         </HBox>
                     </VBox>
 
@@ -154,7 +158,9 @@
                         <Label fx:id="tiltLabel" text="Elev: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
                     </HBox>
 
-                    <HBox spacing="8" alignment="CENTER">
+                    <HBox spacing="14" alignment="CENTER">
+                        <Label fx:id="muzzleVelocityLabel" text="Muzzle velocity: 60.0 m/s"
+                               style="-fx-text-fill: #c3c9d4;"/>
                         <Label text="Ammunition:" style="-fx-text-fill: #9aa3b2;"/>
                         <Label fx:id="ammoLabel" text="0" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #e6e9ee;"/>
                     </HBox>
@@ -177,15 +183,22 @@
                    style="-fx-background-color: #2e313c; -fx-padding: 10; -fx-background-radius: 5; -fx-text-fill: #c3c9d4;"/>
 
             <HBox spacing="12">
-                <Button text="REPORTS" onAction="#onReportsButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                <Button fx:id="reportsButton" text="REPORTS" onAction="#onReportsButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
                         style="-fx-background-color: #636573; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
-                <Button text="HELP" onAction="#onHelpButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-padding: 9;"/>
+                <Button fx:id="forbiddenZoneButton" text="FORBIDDEN ZONE" onAction="#onForbiddenZoneButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                        style="-fx-background-color: #8c3b3b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+                <Button fx:id="helpButton" text="HELP" onAction="#onHelpButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                        style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 9;"/>
             </HBox>
 
-            <TextArea fx:id="reportsArea" editable="false" wrapText="true" visible="false" prefHeight="160"
-                      promptText="Simulation and gun fault reports appear here."
-                      style="-fx-control-inner-background: #1a1c23; -fx-text-fill: white; -fx-font-family: 'Courier New';"/>
+            <TextArea fx:id="reportsArea" editable="false" wrapText="true" visible="false" prefHeight="170"
+                      style="-fx-control-inner-background: #1a1c23; -fx-text-fill: white; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+
+            <TextArea fx:id="forbiddenZoneArea" editable="false" wrapText="true" visible="false" prefHeight="170"
+                      style="-fx-control-inner-background: #241618; -fx-text-fill: #f2b8b8; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+
+            <TextArea fx:id="helpArea" editable="false" wrapText="true" visible="false" prefHeight="170"
+                      style="-fx-control-inner-background: #1b1f26; -fx-text-fill: #b9c4d2; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
         </VBox>
     </center>
 </BorderPane>
