@@ -1,87 +1,103 @@
-package com.hamza.balllauncherfrontend.kafka;
+package com.hamza.balllauncherfrontend;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hamza.balllauncherfrontend.AppConfig;
-import javafx.application.Platform;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.errors.WakeupException;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.util.Collections;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.function.Consumer;
 
-public class SystemReportConsumer implements Runnable {
+public final class AppConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SystemReportConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
+    private static final Properties PROPERTIES = new Properties();
 
-    private final KafkaConsumer<String, String> consumer;
-    private final ObjectMapper objectMapper;
-    private final Consumer<SystemStatus> onReportReceived;
-    private volatile boolean running = true;
-    private final String reportsTopic;
-
-    public SystemReportConsumer(String bootstrapServers, String groupId, Consumer<SystemStatus> onReportReceived) {
-        this.onReportReceived = onReportReceived;
-        this.reportsTopic = AppConfig.reportsTopic();
-
-        this.objectMapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-        props.put(ConsumerConfig.CLIENT_ID_CONFIG, "launcher-frontend-report-consumer");
-
-        this.consumer = new KafkaConsumer<>(props);
-    }
-
-    @Override
-    public void run() {
-        consumer.subscribe(Collections.singletonList(reportsTopic));
-        logger.info("Subscribed to reports topic: {}", reportsTopic);
-
-        try {
-            while (running && !Thread.currentThread().isInterrupted()) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(250));
-                for (ConsumerRecord<String, String> record : records) {
-                    try {
-                        SystemStatus report = objectMapper.readValue(record.value(), SystemStatus.class);
-                        Platform.runLater(() -> onReportReceived.accept(report));
-                    } catch (Exception e) {
-                        logger.warn("Invalid report payload: {}", record.value(), e);
-                    }
-                }
-            }
-        } catch (WakeupException e) {
-            if (running) {
-                logger.warn("Report consumer woken unexpectedly", e);
+    static {
+        try (InputStream input = AppConfig.class.getResourceAsStream("config.properties")) {
+            if (input != null) {
+                PROPERTIES.load(input);
+                logger.info("Configuration loaded from config.properties");
+            } else {
+                logger.warn("config.properties not found; defaults will be used");
             }
         } catch (Exception e) {
-            logger.error("Report consumer failed", e);
-        } finally {
-            consumer.close();
-            logger.info("Report consumer closed.");
+            logger.error("Could not load frontend configuration", e);
         }
     }
 
-    public void stop() {
-        running = false;
-        if (consumer != null) {
-            consumer.wakeup();
+    private AppConfig() {
+    }
+
+    private static String value(String propertyName, String envName, String defaultValue) {
+        String env = System.getenv(envName);
+        if (env != null && !env.isBlank()) return env.trim();
+        return PROPERTIES.getProperty(propertyName, defaultValue).trim();
+    }
+
+    public static String getKafkaBootstrapServers() {
+        return value("kafka.bootstrap.servers", "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
+    }
+
+    public static int getReportsMaxLines() {
+        try {
+            return Integer.parseInt(PROPERTIES.getProperty("reports.max.lines", "200"));
+        } catch (NumberFormatException e) {
+            return 200;
         }
+    }
+
+    public static double getDefaultMuzzleVelocity() {
+        try {
+            return Double.parseDouble(PROPERTIES.getProperty("ballistics.muzzle.velocity", "60.0"));
+        } catch (NumberFormatException e) {
+            return 60.0;
+        }
+    }
+
+    public static List<double[]> getForbiddenSectors() {
+        List<double[]> sectors = new ArrayList<>();
+        String raw = value("forbidden.sectors", "FORBIDDEN_SECTORS", "");
+        if (raw.isBlank()) return sectors;
+
+        for (String part : raw.split(",")) {
+            String[] bounds = part.trim().split(":");
+            if (bounds.length != 2) {
+                logger.warn("Invalid forbidden sector definition: {}", part);
+                continue;
+            }
+            try {
+                double start = Double.parseDouble(bounds[0].trim());
+                double end = Double.parseDouble(bounds[1].trim());
+                sectors.add(new double[]{start, end});
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid forbidden sector numbers: {}", part);
+            }
+        }
+        return sectors;
+    }
+
+    public static String commandTopic() {
+        return value("kafka.command.topic", "KAFKA_COMMAND_TOPIC", "launcher.commands");
+    }
+
+    public static String statusTopic() {
+        return value("kafka.status.topic", "KAFKA_STATUS_TOPIC", "launcher.status");
+    }
+
+    public static String telemetryTopic() {
+        return value("kafka.telemetry.topic", "KAFKA_TELEMETRY_TOPIC", "launcher.telemetry");
+    }
+
+    public static String reportsTopic() {
+        return value("kafka.reports.topic", "KAFKA_REPORTS_TOPIC", "launcher.reports");
+    }
+
+    public static String statusGroupId() {
+        return value("kafka.status.group.id", "KAFKA_STATUS_GROUP_ID", "launcher-frontend-status");
+    }
+
+    public static String reportsGroupId() {
+        return value("kafka.reports.group.id", "KAFKA_REPORTS_GROUP_ID", "launcher-frontend-reports");
     }
 }
-
