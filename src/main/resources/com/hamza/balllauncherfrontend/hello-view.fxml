@@ -17,14 +17,13 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.hamza.balllauncherfrontend.HelloController"
-            prefWidth="780" prefHeight="920"
+            prefWidth="820" prefHeight="1000"
             style="-fx-background-color: #23252e;">
 
     <top>
         <VBox>
-            <HBox fx:id="headerBar" alignment="CENTER_LEFT" spacing="14"
-                  style="-fx-background-color: #18324a; -fx-padding: 16;">
-                <Label text="GUN LAUNCHER CONTROL"
+            <HBox fx:id="headerBar" alignment="CENTER_LEFT" spacing="14" style="-fx-background-color: #18324a; -fx-padding: 16;">
+                <Label text="GUN LAUNCHER CONTROL PANEL"
                        style="-fx-text-fill: #ffffff; -fx-font-size: 20px; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="connectionLabel" text="DISCONNECTED"
@@ -41,20 +40,20 @@
         <VBox spacing="12" style="-fx-padding: 16;">
 
             <HBox spacing="12" alignment="CENTER">
-                <VBox spacing="6" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 12;">
+                <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
                     <Label text="AVAILABILITY" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="availabilityLabel" text="UNKNOWN"
                            style="-fx-background-color: #6b7280; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
                 </VBox>
-                <VBox spacing="6" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 12;">
+                <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
                     <Label text="ALIGNMENT" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="aimLabel" text="ALIGNING"
                            style="-fx-background-color: #d98324; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
                 </VBox>
-                <VBox spacing="6" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 12;">
+                <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
                     <Label text="FIRE SAFETY" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="readyLabel" text="NOT READY"
                            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
@@ -63,45 +62,83 @@
 
             <HBox spacing="12">
 
-                <VBox spacing="10" prefWidth="335" maxHeight="Infinity" HBox.hgrow="ALWAYS"
+                <VBox spacing="10" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
                       style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 16;">
-                    <Label text="TARGETING PARAMETERS"
-                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
+                    <Label text="FIRE CONTROL" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
                     <Separator style="-fx-background-color: #3f434f;"/>
-                    <GridPane hgap="10" vgap="12">
+
+                    <Label text="MANUAL TARGETING" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                    <Label text="Ownship is the origin (0, 0). Enter the target offset relative to ownship."
+                           wrapText="true" style="-fx-text-fill: #7f899a; -fx-font-size: 11px;"/>
+
+                    <GridPane hgap="10" vgap="10">
                         <columnConstraints>
-                            <ColumnConstraints minWidth="70"/>
-                            <ColumnConstraints minWidth="130" maxWidth="130"/>
+                            <ColumnConstraints minWidth="110"/>
+                            <ColumnConstraints minWidth="140" maxWidth="140"/>
                         </columnConstraints>
-                        <Label text="Target X" style="-fx-text-fill: #c3c9d4;"
-                               GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <TextField fx:id="targetXField" promptText="-250.0" prefWidth="130"
+                        <Label text="Target X (m)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="targetXField" promptText="-250.0" prefWidth="140"
                                    GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                        <Label text="Target Y" style="-fx-text-fill: #c3c9d4;"
-                               GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <TextField fx:id="targetYField" promptText="220.0" prefWidth="130"
+                        <Label text="Target Y (m)" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="targetYField" promptText="220.0" prefWidth="140"
                                    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                        <Label text="Ball Type" style="-fx-text-fill: #c3c9d4;"
-                               GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <ComboBox fx:id="ballTypeField" promptText="Select" prefWidth="130"
+                        <Label text="Ball Type" style="-fx-text-fill: #c3c9d4;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="ballTypeField" promptText="Select" prefWidth="140"
                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                     </GridPane>
-                    <Region VBox.vgrow="ALWAYS"/>
-                    <Button text="SET TARGET" onAction="#onSetTargetButtonClick" maxWidth="Infinity"
+
+                    <Button text="SET MANUAL TARGET" onAction="#onSetTargetButtonClick" maxWidth="Infinity"
                             style="-fx-background-color: #2878b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
-                    <Button text="USE SIMULATION TARGET STREAM" onAction="#onUseTrackedTarget" maxWidth="Infinity"
+
+                    <Separator style="-fx-background-color: #3f434f;"/>
+                    <Label text="AUTOMATIC TRACKING" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+
+                    <Button text="USE TRACKED TARGET" onAction="#onUseTrackedTarget" maxWidth="Infinity"
                             style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-padding: 9;"/>
+
+                    <Button fx:id="autoFireButton" text="FIRE ON TRACK" onAction="#onAutoFireButtonClick"
+                            maxWidth="Infinity" disable="true"
+                            style="-fx-background-color: #8c5a1f; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+
+                    <Label text="Enabled only while the tracker reports ALIGNED."
+                           wrapText="true" style="-fx-text-fill: #7f899a; -fx-font-size: 11px;"/>
+
+                    <Region VBox.vgrow="ALWAYS"/>
                 </VBox>
 
-                <VBox spacing="8" alignment="CENTER" prefWidth="335" maxHeight="Infinity" HBox.hgrow="ALWAYS"
+                <VBox spacing="8" alignment="CENTER" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
                       style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 16;">
-                    <Label text="PLATFORM POSITION"
-                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
+                    <Label text="OWNSHIP AND GUN ATTITUDE" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
                     <Separator style="-fx-background-color: #3f434f;"/>
-                    <Canvas fx:id="compassCanvas" width="230" height="230"/>
+
+                    <HBox spacing="6" alignment="CENTER">
+                        <Canvas fx:id="compassCanvas" width="210" height="210"/>
+                        <Canvas fx:id="elevationCanvas" width="135" height="210"/>
+                    </HBox>
+
+                    <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity"
+                          style="-fx-background-color: #262932; -fx-background-radius: 6; -fx-padding: 8 12;">
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Region prefWidth="24" prefHeight="6" minHeight="6" maxHeight="6"
+                                    style="-fx-background-color: #1f3d5c;"/>
+                            <Label text="Ownship heading" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Region prefWidth="24" prefHeight="2" minHeight="2" maxHeight="2"
+                                    style="-fx-background-color: #c0392b;"/>
+                            <Label text="Gun bearing (X axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Region prefWidth="24" prefHeight="2" minHeight="2" maxHeight="2"
+                                    style="-fx-background-color: #d98324;"/>
+                            <Label text="Gun elevation (Y axis)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                        </HBox>
+                    </VBox>
+
+                    <Separator style="-fx-background-color: #3f434f;"/>
 
                     <HBox spacing="10" alignment="CENTER">
-                        <Label fx:id="coordinatesLabel" text="X: 0.00 m Y: 0.00 m"
+                        <Label fx:id="coordinatesLabel" text="Ownship X: 0.00 m Y: 0.00 m"
                                style="-fx-font-size: 13px; -fx-text-fill: #e6e9ee;"/>
                         <HBox spacing="0">
                             <ToggleButton fx:id="unitMeterToggle" text="m" selected="true" prefWidth="42"
@@ -111,30 +148,29 @@
                         </HBox>
                     </HBox>
 
-                    <HBox spacing="18" alignment="CENTER">
-                        <Label fx:id="panLabel" text="Pan: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
-                        <Label fx:id="tiltLabel" text="Tilt: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
+                    <HBox spacing="14" alignment="CENTER">
+                        <Label fx:id="headingLabel" text="Ownship: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
+                        <Label fx:id="panLabel" text="Bearing: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
+                        <Label fx:id="tiltLabel" text="Elev: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
                     </HBox>
-                    <Region VBox.vgrow="ALWAYS"/>
+
                     <HBox spacing="8" alignment="CENTER">
                         <Label text="Ammunition:" style="-fx-text-fill: #9aa3b2;"/>
-                        <Label fx:id="ammoLabel" text="0"
-                               style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #e6e9ee;"/>
+                        <Label fx:id="ammoLabel" text="0" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #e6e9ee;"/>
                     </HBox>
+
+                    <Region VBox.vgrow="ALWAYS"/>
                 </VBox>
             </HBox>
 
             <HBox spacing="12">
-                <Button fx:id="stowButton" text="STOW" onAction="#onStowButtonClick"
-                        HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                <Button fx:id="stowButton" text="STOW" onAction="#onStowButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
                         style="-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
-                <Button fx:id="fireButton" text="FIRE" onAction="#onFireButtonClick" disable="true"
-                        HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                <Button fx:id="fireButton" text="FIRE" onAction="#onFireButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity" disable="true"
                         style="-fx-background-color: #d96b38; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
             </HBox>
 
-            <Button fx:id="emergencyButton" text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick"
-                    maxWidth="Infinity"
+            <Button fx:id="emergencyButton" text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick" maxWidth="Infinity"
                     style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
 
             <Label fx:id="statusMessageLabel" text="Starting..." maxWidth="Infinity" wrapText="true"
