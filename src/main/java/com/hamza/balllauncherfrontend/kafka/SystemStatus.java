@@ -12,6 +12,7 @@ public class SystemStatus {
     private int ammoCount;
     private String ammoType;
     private String reportMessage = "OK";
+    private double elevationAngle;
 
     private boolean aimed;
 
@@ -115,5 +116,11 @@ public class SystemStatus {
     public void setReadyToFire(boolean readyToFire) {
         this.readyToFire = readyToFire;
     }
+
+    public double getElevationAngle() {
+        return elevationAngle;
+    }
+    public void setElevationAngle() {this.elevationAngle = elevationAngle;}
+
 }
 
