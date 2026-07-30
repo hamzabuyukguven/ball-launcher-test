@@ -67,9 +67,10 @@ public final class AppConfig {
                 continue;
             }
             try {
-                double start = Double.parseDouble(bounds[0].trim());
-                double end = Double.parseDouble(bounds[1].trim());
-                sectors.add(new double[]{start, end});
+                sectors.add(new double[]{
+                        Double.parseDouble(bounds[0].trim()),
+                        Double.parseDouble(bounds[1].trim())
+                });
             } catch (NumberFormatException e) {
                 logger.warn("Invalid forbidden sector numbers: {}", part);
             }
