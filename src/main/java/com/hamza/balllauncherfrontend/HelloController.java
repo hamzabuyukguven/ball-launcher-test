@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HelloController {
@@ -41,7 +42,7 @@ public class HelloController {
     private static final Color OWNSHIP_COLOR = Color.web("#1f3d5c");
     private static final Color BEARING_COLOR = Color.web("#c0392b");
     private static final Color ELEVATION_COLOR = Color.web("#d98324");
-    private static final Color FORBIDDEN_FILL = Color.rgb(107, 34, 34, 0.55);
+    private static final Color FORBIDDEN_FILL = Color.rgb(140, 28, 28, 0.78);
     private static final Color FACE_OUTER = Color.web("#c4c6ca");
     private static final Color FACE_INNER = Color.web("#d8dadd");
     private static final Color INK = Color.web("#1a1a1a");
@@ -54,8 +55,8 @@ public class HelloController {
     private static final String PILL_HEADER_OK = "-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-padding: 6 16; -fx-background-radius: 4; -fx-font-weight: bold;";
     private static final String PILL_HEADER_BAD = "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 6 16; -fx-background-radius: 4; -fx-font-weight: bold;";
 
-    private static final String HEADER_NORMAL = "-fx-background-color: #18324a; -fx-padding: 16;";
-    private static final String HEADER_EMERGENCY = "-fx-background-color: #7e1111; -fx-padding: 16;";
+    private static final String HEADER_NORMAL = "-fx-background-color: #18324a; -fx-padding: 11;";
+    private static final String HEADER_EMERGENCY = "-fx-background-color: #7e1111; -fx-padding: 11;";
 
     private static final String STOW_ACTIVE = "-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;";
     private static final String STOW_BUSY = "-fx-background-color: #9dbde0; -fx-text-fill: #2c4a68; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;";
@@ -66,7 +67,11 @@ public class HelloController {
     @FXML private Label readyLabel;
     @FXML private Label availabilityLabel;
     @FXML private Label aimLabel;
-    @FXML private Label coordinatesLabel;
+    @FXML private Label ownshipPositionLabel;
+    @FXML private Label targetRelativeLabel;
+    @FXML private Label targetWorldLabel;
+    @FXML private Label targetSolutionLabel;
+    @FXML private Label trackedLockLabel;
     @FXML private Label headingLabel;
     @FXML private Label panLabel;
     @FXML private Label tiltLabel;
@@ -99,8 +104,8 @@ public class HelloController {
     private double ownshipHeading = 0;
     private double gunBearing = 0;
     private double gunElevation = 0;
-    private double lastX = 0;
-    private double lastY = 0;
+    private double ownshipX = 0;
+    private double ownshipY = 0;
     private double muzzleVelocity = AppConfig.getDefaultMuzzleVelocity();
 
     private boolean emergencyActive = false;
@@ -108,11 +113,18 @@ public class HelloController {
     private boolean connected = false;
     private boolean readyToFire = false;
     private boolean aimed = false;
+    private boolean lockEngaged = false;
     private boolean bearingWasForbidden = false;
 
     private boolean solutionValid = false;
-    private double solutionLatMeters = 0;
-    private double solutionLonMeters = 0;
+    private double solutionRelLat = 0;
+    private double solutionRelLon = 0;
+
+    private boolean hasCommandedTarget = false;
+    private double commandedRelLat = 0;
+    private double commandedRelLon = 0;
+    private double commandedWorldX = 0;
+    private double commandedWorldY = 0;
 
     private PauseTransition stowTimeout;
 
@@ -138,7 +150,7 @@ public class HelloController {
             if (sel == null) {
                 old.setSelected(true);
             } else {
-                updateCoordinatesLabel();
+                updateOwnshipAndTargetPanel();
             }
         });
 
@@ -168,9 +180,14 @@ public class HelloController {
             aimLabel.setText(aimed ? "ALIGNED" : "ALIGNING");
             aimLabel.setStyle(aimed ? PILL_OK : PILL_ORANGE);
 
-            lastX = status.getXCoordinate();
-            lastY = status.getYCoordinate();
-            updateCoordinatesLabel();
+            if (lockEngaged) {
+                trackedLockLabel.setText(aimed ? "LOCK: ON TARGET" : "LOCK: SLEWING");
+                trackedLockLabel.setTextFill(aimed ? Color.web("#5dcaa5") : Color.web("#efb857"));
+            }
+
+            ownshipX = status.getXCoordinate();
+            ownshipY = status.getYCoordinate();
+            updateOwnshipAndTargetPanel();
 
             ownshipHeading = status.getPlatformAngle();
             gunBearing = status.getCannonAngle();
@@ -234,28 +251,35 @@ public class HelloController {
         sb.append("=== GUN LAUNCHER CONTROL PANEL — OPERATOR GUIDE ===").append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("COORDINATE FRAME").append(System.lineSeparator());
-        sb.append(" Ownship is the origin (0, 0). Latitude and longitude are entered").append(System.lineSeparator());
-        sb.append(" in knots relative to ownship and converted to metres before sending.").append(System.lineSeparator());
-        sb.append(" 1 kn unit = 1852 m.").append(System.lineSeparator());
+        sb.append(" Latitude and longitude are entered in metres RELATIVE to ownship,").append(System.lineSeparator());
+        sb.append(" so ownship is always (0, 0) from the operator's point of view.").append(System.lineSeparator());
+        sb.append(" Before transmission the panel adds the ownship world position and").append(System.lineSeparator());
+        sb.append(" sends absolute world coordinates, which is what the backend expects.").append(System.lineSeparator());
+        sb.append(" Both values are shown in the OWNSHIP AND TARGET block.").append(System.lineSeparator());
+        sb.append(" The readout can be switched between metres and knot units").append(System.lineSeparator());
+        sb.append(" (1 kn unit = 1852 m).").append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("STATUS INDICATORS").append(System.lineSeparator());
         sb.append(" AVAILABILITY Backend service state. Green = ready or idle,").append(System.lineSeparator());
         sb.append(" blue = moving or stowing, red = fault or stop.").append(System.lineSeparator());
         sb.append(" ALIGNMENT ALIGNED once the barrel is on the commanded bearing.").append(System.lineSeparator());
         sb.append(" FIRE SAFETY READY only when the backend clears all interlocks.").append(System.lineSeparator());
+        sb.append(" LOCK NOT ENGAGED until a slew is commanded, then SLEWING,").append(System.lineSeparator());
+        sb.append(" then ON TARGET once the backend confirms alignment.").append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("BARREL DISPLAY").append(System.lineSeparator());
         sb.append(" Thick navy needle Ownship heading.").append(System.lineSeparator());
         sb.append(" Thin red needle Barrel bearing on the horizontal axis.").append(System.lineSeparator());
         sb.append(" Amber needle Barrel elevation on the quadrant gauge (0-90).").append(System.lineSeparator());
-        sb.append(" Dark red arcs Forbidden sectors. Firing is blocked inside them.").append(System.lineSeparator());
+        sb.append(" Dark red arcs Forbidden sectors. They are defined relative to").append(System.lineSeparator());
+        sb.append(" the bow and rotate as ownship turns.").append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("COMMANDS").append(System.lineSeparator());
-        sb.append(" SET MANUAL TARGET Sends the entered coordinates as a manual target.").append(System.lineSeparator());
+        sb.append(" SET MANUAL TARGET Sends the entered position as a manual target.").append(System.lineSeparator());
         sb.append(" BALLISTIC CALCULATION Computes range, bearing, quadrant elevation and").append(System.lineSeparator());
         sb.append(" time of flight. Does not move the barrel.").append(System.lineSeparator());
-        sb.append(" SLEW TO TARGET Lays the barrel onto the computed solution.").append(System.lineSeparator());
-        sb.append(" Enabled only after a valid solution.").append(System.lineSeparator());
+        sb.append(" SLEW TO TARGET Lays the barrel onto the computed solution and").append(System.lineSeparator());
+        sb.append(" engages the lock. Needs a valid solution first.").append(System.lineSeparator());
         sb.append(" FIRE Fires along the current barrel bearing. It does").append(System.lineSeparator());
         sb.append(" not read the coordinate fields.").append(System.lineSeparator());
         sb.append(" STOW Returns the barrel to its stowed position.").append(System.lineSeparator());
@@ -275,9 +299,9 @@ public class HelloController {
         if (forbiddenSectors.isEmpty()) {
             sb.append("No forbidden sectors configured.").append(System.lineSeparator());
         } else {
-            sb.append("Configured no-fire sectors:").append(System.lineSeparator());
+            sb.append("No-fire sectors (relative to ownship bow):").append(System.lineSeparator());
             for (double[] sector : forbiddenSectors) {
-                sb.append(String.format(" %6.1f deg -> %6.1f deg%n", sector[0], sector[1]));
+                sb.append(String.format(" %6.1f deg -> %6.1f deg (rotates with heading)%n", sector[0], sector[1]));
             }
         }
         forbiddenZoneArea.setText(sb.toString());
@@ -316,12 +340,29 @@ public class HelloController {
         target.setVisible(true);
     }
 
-    private void updateCoordinatesLabel() {
+    private void updateOwnshipAndTargetPanel() {
         boolean meters = unitMeterToggle.isSelected();
-        double x = meters ? lastX : lastX / METERS_PER_KNOT_UNIT;
-        double y = meters ? lastY : lastY / METERS_PER_KNOT_UNIT;
         String unit = meters ? "m" : "kn";
-        coordinatesLabel.setText(String.format("Ownship X: %.2f %s Y: %.2f %s", x, unit, y, unit));
+        double divisor = meters ? 1.0 : METERS_PER_KNOT_UNIT;
+
+        ownshipPositionLabel.setText(String.format("Ownship X: %.2f %s Y: %.2f %s",
+                ownshipX / divisor, unit, ownshipY / divisor, unit));
+
+        if (!hasCommandedTarget) {
+            targetRelativeLabel.setText("Target rel X: -- Y: --");
+            targetWorldLabel.setText("Target world X: -- Y: --");
+            targetSolutionLabel.setText("Range: -- Bearing: --");
+            return;
+        }
+
+        targetRelativeLabel.setText(String.format("Target rel X: %.2f %s Y: %.2f %s",
+                commandedRelLon / divisor, unit, commandedRelLat / divisor, unit));
+        targetWorldLabel.setText(String.format("Target world X: %.2f %s Y: %.2f %s",
+                commandedWorldX / divisor, unit, commandedWorldY / divisor, unit));
+
+        double range = Math.hypot(commandedRelLon, commandedRelLat);
+        double bearing = normalizeBearing(Math.toDegrees(Math.atan2(commandedRelLon, commandedRelLat)));
+        targetSolutionLabel.setText(String.format("Range: %.1f m Bearing: %.2f deg", range, bearing));
     }
 
     private String availabilityStyle(String availability) {
@@ -336,11 +377,22 @@ public class HelloController {
         return ((bearing % 360) + 360) % 360;
     }
 
+    private List<double[]> absoluteForbiddenSectors() {
+        List<double[]> absolute = new ArrayList<>();
+        for (double[] sector : forbiddenSectors) {
+            absolute.add(new double[]{
+                    normalizeBearing(sector[0] + ownshipHeading),
+                    normalizeBearing(sector[1] + ownshipHeading)
+            });
+        }
+        return absolute;
+    }
+
     private boolean isBearingForbidden(double bearing) {
         double b = normalizeBearing(bearing);
-        for (double[] sector : forbiddenSectors) {
-            double start = normalizeBearing(sector[0]);
-            double end = normalizeBearing(sector[1]);
+        for (double[] sector : absoluteForbiddenSectors()) {
+            double start = sector[0];
+            double end = sector[1];
             if (start <= end) {
                 if (b >= start && b <= end) return true;
             } else if (b >= start || b <= end) {
@@ -361,8 +413,8 @@ public class HelloController {
     }
 
     private void refreshFireState() {
-        fireButton.setDisable(!(connected && readyToFire && !emergencyActive));
-        slewButton.setDisable(!(connected && solutionValid && !emergencyActive));
+        fireButton.setDisable(emergencyActive);
+        slewButton.setDisable(!solutionValid || emergencyActive);
         stowButton.setDisable(emergencyActive || stowInProgress);
 
         if (emergencyActive) {
@@ -381,6 +433,7 @@ public class HelloController {
         headerBar.setStyle(HEADER_EMERGENCY);
         emergencyButton.setText("EMERGENCY STOP ENGAGED");
         finishStow();
+        clearLock();
         refreshFireState();
     }
 
@@ -397,6 +450,12 @@ public class HelloController {
         refreshFireState();
         logger.info("Emergency stop auto-cleared by new command.");
         return true;
+    }
+
+    private void clearLock() {
+        lockEngaged = false;
+        trackedLockLabel.setText("LOCK: NOT ENGAGED");
+        trackedLockLabel.setTextFill(Color.web("#9aa3b2"));
     }
 
     private void beginStow() {
@@ -418,29 +477,50 @@ public class HelloController {
         stowButton.setDisable(emergencyActive);
     }
 
+    private void rememberTarget(double relLat, double relLon, double worldX, double worldY) {
+        commandedRelLat = relLat;
+        commandedRelLon = relLon;
+        commandedWorldX = worldX;
+        commandedWorldY = worldY;
+        hasCommandedTarget = true;
+        updateOwnshipAndTargetPanel();
+    }
+
     @FXML
     protected void onSetTargetButtonClick() {
-        boolean released = releaseEmergencyIfNeeded();
+        double relLat;
+        double relLon;
         try {
-            LauncherTelemetry telemetry = readTelemetry();
-            producer.sendTelemetry(telemetry.getTargetX(), telemetry.getTargetY());
-            producer.sendCommand(new LaunchCommand(LauncherAction.SET_MANUAL_TARGET, telemetry));
-            logger.info("SET_MANUAL_TARGET sent X:{} m Y:{} m", telemetry.getTargetX(), telemetry.getTargetY());
-            appendLog(reportsArea, String.format("Manual target set to %.1f m / %.1f m.",
-                    telemetry.getTargetY(), telemetry.getTargetX()));
-            setUiMessage(released ? "Emergency released. Manual target set." : "Manual target set.", false);
+            relLat = Double.parseDouble(latitudeField.getText().trim());
+            relLon = Double.parseDouble(longitudeField.getText().trim());
         } catch (NumberFormatException e) {
             setUiMessage("Invalid coordinates entered.", true);
+            return;
         }
+
+        boolean released = releaseEmergencyIfNeeded();
+
+        double worldX = ownshipX + relLon;
+        double worldY = ownshipY + relLat;
+
+        LauncherTelemetry telemetry = new LauncherTelemetry(worldX, worldY);
+        producer.sendTelemetry(worldX, worldY);
+        producer.sendCommand(new LaunchCommand(LauncherAction.SET_MANUAL_TARGET, telemetry));
+
+        rememberTarget(relLat, relLon, worldX, worldY);
+        logger.info("SET_MANUAL_TARGET rel({}, {}) -> world({}, {})", relLon, relLat, worldX, worldY);
+        appendLog(reportsArea, String.format("Manual target set. Relative %.1f / %.1f m, world %.1f / %.1f m.",
+                relLon, relLat, worldX, worldY));
+        setUiMessage(released ? "Emergency released. Manual target set." : "Manual target set.", false);
     }
 
     @FXML
     protected void onBallisticCalculationClick() {
-        double latMeters;
-        double lonMeters;
+        double relLat;
+        double relLon;
         try {
-            latMeters = Double.parseDouble(latitudeField.getText().trim()) * METERS_PER_KNOT_UNIT;
-            lonMeters = Double.parseDouble(longitudeField.getText().trim()) * METERS_PER_KNOT_UNIT;
+            relLat = Double.parseDouble(latitudeField.getText().trim());
+            relLon = Double.parseDouble(longitudeField.getText().trim());
         } catch (NumberFormatException e) {
             solutionValid = false;
             refreshFireState();
@@ -449,15 +529,15 @@ public class HelloController {
             return;
         }
 
-        double range = Math.hypot(lonMeters, latMeters);
-        double bearing = normalizeBearing(Math.toDegrees(Math.atan2(lonMeters, latMeters)));
+        double range = Math.hypot(relLon, relLat);
+        double bearing = normalizeBearing(Math.toDegrees(Math.atan2(relLon, relLat)));
         double relativeBearing = normalizeBearing(bearing - ownshipHeading);
         double maxRange = (muzzleVelocity * muzzleVelocity) / GRAVITY;
         boolean forbidden = isBearingForbidden(bearing);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("TARGET LAT : %10.3f kn%n", latMeters / METERS_PER_KNOT_UNIT));
-        sb.append(String.format("TARGET LON : %10.3f kn%n", lonMeters / METERS_PER_KNOT_UNIT));
+        sb.append(String.format("TARGET REL LAT: %10.1f m%n", relLat));
+        sb.append(String.format("TARGET REL LON: %10.1f m%n", relLon));
         sb.append(String.format("SLANT RANGE : %10.1f m%n", range));
         sb.append(String.format("TRUE BEARING : %10.2f deg%n", bearing));
         sb.append(String.format("REL BEARING : %10.2f deg%n", relativeBearing));
@@ -478,8 +558,8 @@ public class HelloController {
             double elevation = 0.5 * Math.toDegrees(Math.asin((range * GRAVITY) / (muzzleVelocity * muzzleVelocity)));
             double tof = (2 * muzzleVelocity * Math.sin(Math.toRadians(elevation))) / GRAVITY;
             solutionValid = true;
-            solutionLatMeters = latMeters;
-            solutionLonMeters = lonMeters;
+            solutionRelLat = relLat;
+            solutionRelLon = relLon;
             sb.append(String.format("QUADRANT ELEV : %10.2f deg%n", elevation));
             sb.append(String.format("TIME OF FLIGHT: %10.2f s", tof));
             solutionArea.setText(sb.toString());
@@ -496,12 +576,24 @@ public class HelloController {
             setUiMessage("Run ballistic calculation first.", true);
             return;
         }
+
         boolean released = releaseEmergencyIfNeeded();
-        LauncherTelemetry telemetry = new LauncherTelemetry(solutionLonMeters, solutionLatMeters);
-        producer.sendTelemetry(solutionLonMeters, solutionLatMeters);
+
+        double worldX = ownshipX + solutionRelLon;
+        double worldY = ownshipY + solutionRelLat;
+
+        LauncherTelemetry telemetry = new LauncherTelemetry(worldX, worldY);
+        producer.sendTelemetry(worldX, worldY);
         producer.sendCommand(new LaunchCommand(LauncherAction.USE_TRACKED_TARGET, telemetry));
-        logger.info("SLEW to solution lat:{} m lon:{} m", solutionLatMeters, solutionLonMeters);
-        appendLog(reportsArea, "Slew command sent to computed solution.");
+
+        rememberTarget(solutionRelLat, solutionRelLon, worldX, worldY);
+
+        lockEngaged = true;
+        trackedLockLabel.setText("LOCK: SLEWING");
+        trackedLockLabel.setTextFill(Color.web("#efb857"));
+
+        logger.info("SLEW rel({}, {}) -> world({}, {})", solutionRelLon, solutionRelLat, worldX, worldY);
+        appendLog(reportsArea, String.format("Slew engaged. World target %.1f / %.1f m.", worldX, worldY));
         setUiMessage(released ? "Emergency released. Slewing to target." : "Slewing to target.", false);
     }
 
@@ -509,16 +601,15 @@ public class HelloController {
     protected void onFireButtonClick() {
         boolean released = releaseEmergencyIfNeeded();
 
-        if (!readyToFire) {
-            setUiMessage("System is not ready to fire.", true);
-            return;
-        }
-
         if (isBearingForbidden(gunBearing)) {
             appendLog(forbiddenZoneArea, String.format("FIRE BLOCKED: barrel bearing %.2f deg is inside a forbidden sector.", gunBearing));
             showPanel(forbiddenZoneArea);
             setUiMessage("Fire blocked: barrel is inside a forbidden sector.", true);
             return;
+        }
+
+        if (!readyToFire) {
+            appendLog(reportsArea, "Fire request sent while backend reports NOT READY.");
         }
 
         producer.sendCommand(new LaunchCommand(LauncherAction.FIRE, null));
@@ -532,6 +623,7 @@ public class HelloController {
         boolean released = releaseEmergencyIfNeeded();
         producer.sendCommand(new LaunchCommand(LauncherAction.STOW, null));
         beginStow();
+        clearLock();
         appendLog(reportsArea, "Stow command sent.");
         setUiMessage(released ? "Emergency released. Stowing..." : "Stowing...", false);
     }
@@ -558,12 +650,6 @@ public class HelloController {
     @FXML
     protected void onHelpButtonClick() {
         togglePanel(helpArea);
-    }
-
-    private LauncherTelemetry readTelemetry() {
-        double latMeters = Double.parseDouble(latitudeField.getText().trim()) * METERS_PER_KNOT_UNIT;
-        double lonMeters = Double.parseDouble(longitudeField.getText().trim()) * METERS_PER_KNOT_UNIT;
-        return new LauncherTelemetry(lonMeters, latMeters);
     }
 
     private void setUiMessage(String message, boolean isError) {
@@ -621,13 +707,14 @@ public class HelloController {
     }
 
     private void drawForbiddenSectors(GraphicsContext gc, double cx, double cy, double radius) {
-        if (forbiddenSectors.isEmpty()) {
+        List<double[]> sectors = absoluteForbiddenSectors();
+        if (sectors.isEmpty()) {
             return;
         }
         gc.setFill(FORBIDDEN_FILL);
-        for (double[] sector : forbiddenSectors) {
-            double start = normalizeBearing(sector[0]);
-            double end = normalizeBearing(sector[1]);
+        for (double[] sector : sectors) {
+            double start = sector[0];
+            double end = sector[1];
             if (start <= end) {
                 fillSector(gc, cx, cy, radius, start, end);
             } else {
@@ -649,9 +736,9 @@ public class HelloController {
         GraphicsContext gc = elevationCanvas.getGraphicsContext2D();
         double w = elevationCanvas.getWidth();
         double h = elevationCanvas.getHeight();
-        double px = 26;
-        double py = h - 40;
-        double radius = Math.min(w - 42, py - 30);
+        double px = 30;
+        double py = h - 30;
+        double radius = Math.min(w - 52, py - 34);
 
         gc.clearRect(0, 0, w, h);
 
@@ -697,11 +784,9 @@ public class HelloController {
 
         gc.setFont(Font.font("Courier New", FontWeight.BOLD, 11));
         gc.setFill(INK);
-        gc.fillText("0", px + radius - 10, py + 15);
-        gc.fillText("90", px - 5, py - radius - 7);
+        gc.fillText("0", px + radius + 4, py + 4);
+        gc.fillText("90", px - 6, py - radius - 8);
 
-        gc.setFill(Color.web("#9aa3b2"));
-        gc.fillText("ELEVATION", 10, h - 12);
     }
 
     private void drawLabelWithBackground(GraphicsContext gc, String text, double x, double y) {
