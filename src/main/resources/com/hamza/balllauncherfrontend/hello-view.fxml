@@ -172,7 +172,7 @@
 
                     <HBox spacing="14" alignment="CENTER">
                         <Label fx:id="headingLabel" text="Ownship: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
-                        <Label fx:id="panLabel" text="Elevation: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
+                        <Label fx:id="panLabel" text="Train: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
                         <Label fx:id="tiltLabel" text="Elev: 0.00°" style="-fx-text-fill: #c3c9d4;"/>
                     </HBox>
 
