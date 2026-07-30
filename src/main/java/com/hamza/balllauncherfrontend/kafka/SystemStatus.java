@@ -3,19 +3,18 @@ package com.hamza.balllauncherfrontend.kafka;
 public class SystemStatus {
 
     private boolean connected;
-    private String availability = "DISCONNECTED";
+    private String availability;
     private double platformAngle;
     private double cannonAngle;
+    private double elevationAngle;
     private long timestamp;
     private double xCoordinate;
     private double yCoordinate;
     private int ammoCount;
     private String ammoType;
-    private String reportMessage = "OK";
-    private double elevationAngle;
-
+    private String reportMessage;
+    private double muzzleVelocity;
     private boolean aimed;
-
     private boolean readyToFire;
 
     public SystemStatus() {
@@ -51,6 +50,14 @@ public class SystemStatus {
 
     public void setCannonAngle(double cannonAngle) {
         this.cannonAngle = cannonAngle;
+    }
+
+    public double getElevationAngle() {
+        return elevationAngle;
+    }
+
+    public void setElevationAngle(double elevationAngle) {
+        this.elevationAngle = elevationAngle;
     }
 
     public long getTimestamp() {
@@ -101,6 +108,14 @@ public class SystemStatus {
         this.reportMessage = reportMessage;
     }
 
+    public double getMuzzleVelocity() {
+        return muzzleVelocity;
+    }
+
+    public void setMuzzleVelocity(double muzzleVelocity) {
+        this.muzzleVelocity = muzzleVelocity;
+    }
+
     public boolean isAimed() {
         return aimed;
     }
@@ -116,20 +131,4 @@ public class SystemStatus {
     public void setReadyToFire(boolean readyToFire) {
         this.readyToFire = readyToFire;
     }
-
-    public double getElevationAngle() {
-        return elevationAngle;
-    }
-    public void setElevationAngle() {this.elevationAngle = elevationAngle;}
-
-    private double muzzleVelocity;
-
-    public double getMuzzleVelocity(){
-        return muzzleVelocity;
-    }
-    public void setMuzzleVelocity(double muzzleVelocity) {
-        this.muzzleVelocity = muzzleVelocity;
-    }
-
 }
-
