@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -30,62 +31,62 @@
                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 6 16; -fx-background-radius: 4; -fx-font-weight: bold;"/>
             </HBox>
 
-            <Label fx:id="emergencyBanner" text="EMERGENCY STOP ACTIVE — SEND ANY COMMAND TO RELEASE"
+            <Label fx:id="emergencyBanner" text="EMERGENCY STOP ACTIVE  —  SEND ANY COMMAND TO RELEASE"
                    maxWidth="Infinity" alignment="CENTER" visible="false" managed="false"
-                   style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10;"/>
+                   style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 9;"/>
         </VBox>
     </top>
 
     <center>
         <VBox spacing="9" style="-fx-padding: 12;">
 
-            <HBox spacing="12" alignment="CENTER">
+            <HBox spacing="10" alignment="CENTER">
                 <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 8;">
                     <Label text="AVAILABILITY" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="availabilityLabel" text="UNKNOWN"
                            style="-fx-background-color: #6b7280; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
                 </VBox>
                 <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 8;">
                     <Label text="ALIGNMENT" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="aimLabel" text="ALIGNING"
                            style="-fx-background-color: #d98324; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
                 </VBox>
                 <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 10;">
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 8;">
                     <Label text="FIRE SAFETY" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <Label fx:id="readyLabel" text="NOT READY"
                            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-padding: 4 14; -fx-background-radius: 4; -fx-font-weight: bold;"/>
                 </VBox>
             </HBox>
 
-            <HBox spacing="12">
+            <HBox spacing="10">
 
-                <VBox spacing="10" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 16;">
+                <VBox spacing="8" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 12;">
                     <Label text="FIRE CONTROL" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
                     <Separator style="-fx-background-color: #3f434f;"/>
 
                     <Label text="OWNSHIP AND TARGET" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
                     <VBox spacing="3" maxWidth="Infinity"
-                          style="-fx-background-color: #262932; -fx-background-radius: 6; -fx-padding: 8 12;">
+                          style="-fx-background-color: #262932; -fx-background-radius: 6; -fx-padding: 7 10;">
                         <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Label fx:id="ownshipPositionLabel" text="Ownship X: -- Y: --"
+                            <Label fx:id="ownshipPositionLabel" text="Ownship  X: --   Y: --"
                                    style="-fx-text-fill: #e6e9ee; -fx-font-family: 'Courier New'; -fx-font-size: 12px;"/>
                             <Region HBox.hgrow="ALWAYS"/>
                             <HBox spacing="0">
-                                <ToggleButton fx:id="unitMeterToggle" text="m" selected="true" prefWidth="38"
+                                <ToggleButton fx:id="unitMeterToggle" text="m" selected="true" prefWidth="36"
                                               style="-fx-background-radius: 4 0 0 4; -fx-font-size: 10px;"/>
-                                <ToggleButton fx:id="unitKnotToggle" text="kn" prefWidth="38"
+                                <ToggleButton fx:id="unitKnotToggle" text="kn" prefWidth="36"
                                               style="-fx-background-radius: 0 4 4 0; -fx-font-size: 10px;"/>
                             </HBox>
                         </HBox>
-                        <Label fx:id="targetRelativeLabel" text="Target rel X: -- Y: --"
+                        <Label fx:id="targetRelativeLabel" text="Target rel   X: --   Y: --"
                                style="-fx-text-fill: #c3c9d4; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
-                        <Label fx:id="targetWorldLabel" text="Target world X: -- Y: --"
+                        <Label fx:id="targetWorldLabel" text="Target world X: --   Y: --"
                                style="-fx-text-fill: #c3c9d4; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
-                        <Label fx:id="targetSolutionLabel" text="Range: -- Bearing: --"
+                        <Label fx:id="targetSolutionLabel" text="Range: --   Bearing: --"
                                style="-fx-text-fill: #c3c9d4; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
                         <Label fx:id="trackedLockLabel" text="LOCK: NOT ENGAGED"
                                style="-fx-text-fill: #9aa3b2; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
@@ -94,7 +95,7 @@
                     <Separator style="-fx-background-color: #3f434f;"/>
                     <Label text="MANUAL TARGETING (RELATIVE TO OWNSHIP)" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
 
-                    <GridPane hgap="10" vgap="8">
+                    <GridPane hgap="10" vgap="7">
                         <columnConstraints>
                             <ColumnConstraints minWidth="115"/>
                             <ColumnConstraints minWidth="140" maxWidth="140"/>
@@ -111,7 +112,7 @@
                     </GridPane>
 
                     <Button text="SET MANUAL TARGET" onAction="#onSetTargetButtonClick" maxWidth="Infinity"
-                            style="-fx-background-color: #2878b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+                            style="-fx-background-color: #2878b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;"/>
 
                     <Separator style="-fx-background-color: #3f434f;"/>
                     <Label text="FIRING SOLUTION" style="-fx-text-fill: #9aa3b2; -fx-font-size: 11px; -fx-font-weight: bold;"/>
@@ -121,17 +122,17 @@
                               style="-fx-control-inner-background: #1a1c23; -fx-text-fill: #9fe1cb; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
 
                     <Button text="BALLISTIC CALCULATION" onAction="#onBallisticCalculationClick" maxWidth="Infinity"
-                            style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 9;"/>
+                            style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 8;"/>
 
                     <Button fx:id="slewButton" text="SLEW TO TARGET" onAction="#onSlewToTargetClick"
                             maxWidth="Infinity" disable="true"
-                            style="-fx-background-color: #8c5a1f; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+                            style="-fx-background-color: #8c5a1f; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;"/>
 
                     <Region VBox.vgrow="ALWAYS"/>
                 </VBox>
 
-                <VBox spacing="8" alignment="CENTER" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
-                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 16;">
+                <VBox spacing="7" alignment="CENTER" prefWidth="380" maxHeight="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: #2e313c; -fx-background-radius: 8; -fx-border-color: #3f434f; -fx-border-radius: 8; -fx-padding: 12;">
                     <Label text="BARREL" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6e9ee;"/>
                     <Separator style="-fx-background-color: #3f434f;"/>
 
@@ -141,7 +142,7 @@
                     </HBox>
 
                     <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity"
-                          style="-fx-background-color: #262932; -fx-background-radius: 6; -fx-padding: 8 12;">
+                          style="-fx-background-color: #262932; -fx-background-radius: 6; -fx-padding: 7 10;">
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Region prefWidth="24" prefHeight="6" minHeight="6" maxHeight="6"
                                     style="-fx-background-color: #1f3d5c;"/>
@@ -159,8 +160,8 @@
                         </HBox>
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Region prefWidth="24" prefHeight="10" minHeight="10" maxHeight="10"
-                                    style="-fx-background-color: #6b2222;"/>
-                            <Label text="Forbidden sector (rotates with ownship)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
+                                    style="-fx-background-color: #8c1c1c;"/>
+                            <Label text="No-fire arc, astern ±30° (rotates with ownship)" style="-fx-text-fill: #c3c9d4; -fx-font-size: 11px;"/>
                         </HBox>
                     </VBox>
 
@@ -183,35 +184,58 @@
                 </VBox>
             </HBox>
 
-            <HBox spacing="12">
+            <HBox spacing="10">
                 <Button fx:id="stowButton" text="STOW" onAction="#onStowButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
+                        style="-fx-background-color: #4a8cd2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 11; -fx-background-radius: 4;"/>
                 <Button fx:id="fireButton" text="FIRE" onAction="#onFireButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #d96b38; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
+                        style="-fx-background-color: #d96b38; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 11; -fx-background-radius: 4;"/>
             </HBox>
 
             <Button fx:id="emergencyButton" text="EMERGENCY STOP" onAction="#onEmergencyStopButtonClick" maxWidth="Infinity"
-                    style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 4;"/>
+                    style="-fx-background-color: #b62b2b; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 11; -fx-background-radius: 4;"/>
 
             <Label fx:id="statusMessageLabel" text="Starting..." maxWidth="Infinity" wrapText="true"
-                   style="-fx-background-color: #2e313c; -fx-padding: 10; -fx-background-radius: 5; -fx-text-fill: #c3c9d4;"/>
+                   style="-fx-background-color: #2e313c; -fx-padding: 9; -fx-background-radius: 5; -fx-text-fill: #c3c9d4;"/>
 
-            <HBox spacing="12">
+            <HBox spacing="10">
                 <Button text="REPORTS" onAction="#onReportsButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #636573; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+                        style="-fx-background-color: #636573; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;"/>
                 <Button text="FORBIDDEN ZONE" onAction="#onForbiddenZoneButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #8c3b3b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 9;"/>
+                        style="-fx-background-color: #8c3b3b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;"/>
                 <Button text="HELP" onAction="#onHelpButtonClick" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                        style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 9;"/>
+                        style="-fx-background-color: #3f434f; -fx-text-fill: #e6e9ee; -fx-font-weight: bold; -fx-padding: 8;"/>
             </HBox>
 
-            <TextArea fx:id="reportsArea" editable="false" wrapText="true" visible="false" prefHeight="130"
-                      style="-fx-control-inner-background: #1a1c23; -fx-text-fill: white; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+            <VBox fx:id="reportsPanel" visible="false" spacing="0"
+                  style="-fx-background-color: #1a1c23; -fx-background-radius: 6; -fx-border-color: #3f434f; -fx-border-radius: 6;">
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: #262932; -fx-padding: 6 8; -fx-background-radius: 6 6 0 0;">
+                    <Region prefWidth="12" minWidth="12" maxWidth="12"/>
+                    <Label text="TIME" minWidth="60" style="-fx-text-fill: #7f899a; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="CODE" minWidth="80" style="-fx-text-fill: #7f899a; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="MESSAGE" style="-fx-text-fill: #7f899a; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                </HBox>
+                <ListView fx:id="reportsList" prefHeight="150"
+                          style="-fx-background-color: #1a1c23; -fx-control-inner-background: #1a1c23; -fx-background-insets: 0; -fx-padding: 0;"/>
+            </VBox>
 
-            <TextArea fx:id="forbiddenZoneArea" editable="false" wrapText="true" visible="false" prefHeight="130"
-                      style="-fx-control-inner-background: #241618; -fx-text-fill: #f2b8b8; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
+            <VBox fx:id="forbiddenPanel" visible="false" spacing="0"
+                  style="-fx-background-color: #241618; -fx-background-radius: 6; -fx-border-color: #5a2a2a; -fx-border-radius: 6;">
+                <Label fx:id="forbiddenSectorLabel" text="ACTIVE NO-FIRE ARC   --"
+                       maxWidth="Infinity"
+                       style="-fx-background-color: #3a1d1d; -fx-text-fill: #f2b8b8; -fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 7 10; -fx-background-radius: 6 6 0 0;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: #2e1a1c; -fx-padding: 6 8;">
+                    <Region prefWidth="12" minWidth="12" maxWidth="12"/>
+                    <Label text="TIME" minWidth="60" style="-fx-text-fill: #a97f7f; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="CODE" minWidth="80" style="-fx-text-fill: #a97f7f; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="MESSAGE" style="-fx-text-fill: #a97f7f; -fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                </HBox>
+                <ListView fx:id="forbiddenList" prefHeight="130"
+                          style="-fx-background-color: #241618; -fx-control-inner-background: #241618; -fx-background-insets: 0; -fx-padding: 0;"/>
+            </VBox>
 
-            <TextArea fx:id="helpArea" editable="false" wrapText="true" visible="false" prefHeight="130"
+            <TextArea fx:id="helpArea" editable="false" wrapText="true" visible="false" prefHeight="150"
                       style="-fx-control-inner-background: #1b1f26; -fx-text-fill: #b9c4d2; -fx-font-family: 'Courier New'; -fx-font-size: 11px;"/>
         </VBox>
     </center>
