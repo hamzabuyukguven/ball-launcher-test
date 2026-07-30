@@ -191,7 +191,7 @@ public class HelloController {
 
     @FXML
     public void initialize() {
-        ballTypeField.getItems().addAll("A", "B", "C");
+        ballTypeField.getItems().addAll("76 MM");
         ballTypeField.getSelectionModel().selectFirst();
 
         forbiddenSectors = AppConfig.getForbiddenSectors();
